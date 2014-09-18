@@ -27,28 +27,182 @@ void setup() {
 }
 
 void loop() {
-    Serial.print( time( 22, 1 << 0 ), DEC );
+    Serial.print( chargeTime( 22 ), DEC );
     Serial.print( " " );
-    Serial.print( time( 24, 1 << 2 ), DEC );
+    Serial.print( chargeTime( 24 ), DEC );
     Serial.print( " " );
-    Serial.println( time( 26, 1 << 4 ), DEC );
+    Serial.println( chargeTime( 26 ), DEC );
 }
 
-long time( int pin, byte mask ) {
-  unsigned long count = 0, total = 0;
-  while( checkTimer() < refresh ) {
-      // pinMode() is about 6 times slower than assigning DDRB directly, but
-      // that pause is important. (probably for preventing an overflow in
-      // 'total'). delay() doesn't have a high enough granularity at 1ms since
-      // the pinMode() calls only take about 6μs each.
-      pinMode( pin, OUTPUT );
-      PORTA = 0;
-      pinMode( pin, INPUT );
+/* Returns time taken for the pin to accumulate charge after set to 0V.
+ * Charge is finished accumulating when the pin's state flips from 0 to 1.
+ */
+long chargeTime( int pin ) {
+    unsigned long count = 0, total = 0;
 
-      while ( (PINA & mask) == 0 ) {
-          count++;
-      }
-      total++;
+    /* On PORTA, pins 22 through 29 belong to a mask which starts with a left
+     * bitshift of 0.
+     */
+    byte mask = 1 << (pin - 22);
+
+    // Repeat resetting pin and counting until enough samples are accumulated
+    while( checkTimer() < refresh ) {
+        /* Assigning DDRB is too fast for the granularity we want in the return
+         * value. 60 NOP instructions are added after each assignment to slow
+         * the code down to the speed at which pinMode() operates so larger
+         * values can be accumulated in the counter.
+         */
+
+        // Set pin to low
+        PORTA &= ~mask;
+
+        // Set pin to OUTPUT
+        DDRA |= mask;
+
+        asm volatile(
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+        );
+
+        // Set pin to INPUT
+        DDRA &= ~mask;
+
+        asm volatile(
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+        );
+
+        // Count until pin switches state (until capacitor charges)
+        while ( (PINA & mask) == 0 ) {
+            count++;
+        }
+        total++;
     }
 
     restartTimer();
