@@ -23,7 +23,7 @@ void setup() {
         pinMode( i, INPUT );
     }
 
-    startTimer();
+    restartTimer();
 }
 
 void loop() {
@@ -32,28 +32,32 @@ void loop() {
     Serial.print( time( 24, 1 << 2 ), DEC );
     Serial.print( " " );
     Serial.println( time( 26, 1 << 4 ), DEC );
-} 
+}
 
 long time( int pin, byte mask ) {
   unsigned long count = 0, total = 0;
   while( checkTimer() < refresh ) {
-      // pinMode is about 6 times slower than assigning
-      // DDRB directly, but that pause is important
+      // pinMode() is about 6 times slower than assigning DDRB directly, but
+      // that pause is important. (probably for preventing an overflow in
+      // 'total'). delay() doesn't have a high enough granularity at 1ms since
+      // the pinMode() calls only take about 6μs each.
       pinMode( pin, OUTPUT );
       PORTA = 0;
       pinMode( pin, INPUT );
+
       while ( (PINA & mask) == 0 ) {
-        count++;
+          count++;
       }
       total++;
     }
-    startTimer();
+
+    restartTimer();
     return (count << resolution) / total;
 }
 
 extern volatile unsigned long timer0_overflow_count;
 
-void startTimer() {
+void restartTimer() {
     timer0_overflow_count = 0;
     TCNT0 = 0;
 }
@@ -61,5 +65,4 @@ void startTimer() {
 unsigned long checkTimer() {
     return ((timer0_overflow_count << 8) + TCNT0) << 2;
 }
-
 
