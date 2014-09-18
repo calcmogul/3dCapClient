@@ -1,0 +1,6 @@
+*.dll
+*.o
+*.d
+*.res
+*.exe
+3dCapClient
