@@ -1,16 +1,20 @@
 //=============================================================================
 //File Name: Main.cpp
-//Description: Implements mouse driver using 3D capacitor as input device
+//Description: Implements mouse input driver using 3D capacitor
 //Author: Tyler Veness
 //=============================================================================
 
 #include <iostream>
 #include <string>
 
+#ifdef _WIN32
+#include "SerialPort.hpp"
+#else
 #include <unistd.h>  // UNIX standard function definitions
 #include <fcntl.h>   // File control definitions
 #include <errno.h>   // Error number definitions
 #include <termios.h> // POSIX terminal control definitions
+#endif
 
 #include "Normalize.hpp"
 #include "WeightedAverageFilter.hpp"
@@ -21,9 +25,11 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
+#ifndef _WIN32
 // portLabel example: S0, S1, ACM0
 int open_port( const char* portLabel );
 void set_baud_rate( int fd , speed_t speed );
+#endif
 void msg( std::string msg );
 
 const unsigned int sen = 3; // sensors
@@ -74,16 +80,20 @@ int main() {
      * and your Arduino is on ttyS1, pass "dev/ttyS1" in.
      */
 #ifdef _WIN32
-    int serialPort = open_port( "COM1" );
+    SerialPort serialPort( "\\\\.\\COM1" );
+
+    if ( !serialPort.IsConnected() ) {
+        return 0;
+    }
 #else
     int serialPort = open_port( "/dev/ttyACM0" );
-#endif
 
     if ( serialPort == -1 ) {
         return 0;
     }
 
     set_baud_rate( serialPort , B115200 );
+#endif
 
     float nxyz[sen];
     int ixyz[sen];
@@ -149,14 +159,20 @@ int main() {
         }
 
         // Read line of serialPort data
+#ifdef _WIN32
+        while ( serialPort.ReadData( &curChar , 1 ) != -1 && curChar != '\n' ) {
+            serialPortData += curChar;
+        }
+#else
         while ( read( serialPort , &curChar , 1 ) != 0 && curChar != '\n' &&
                 curChar != '\0' ) {
             serialPortData += curChar;
         }
+#endif
 
         // If curChar == '\n', there is a new line of complete data
         if ( curChar == '\n' ) {
-            //std::cout << serialPortData << std::endl;
+            std::cout << serialPortData << std::endl;
 
             std::vector<std::string> parts = split( serialPortData , " " );
             if ( parts.size() == sen ) {
@@ -272,19 +288,18 @@ int main() {
         delete axyz[i];
     }
 
+#ifndef _WIN32
     close ( serialPort );
+#endif
 
     return 0;
 }
 
+#ifndef _WIN32
 int open_port( const char* portLabel ) {
     std::string name( portLabel );
 
-#ifdef _WIN32
-
-#else
     int fd = open( name.c_str() , O_RDONLY | O_NOCTTY | O_NDELAY );
-#endif
 
     if ( fd == -1 ) {
         // Couldn't open the port
@@ -293,11 +308,7 @@ int open_port( const char* portLabel ) {
         perror( str.c_str() );
     }
     else {
-#ifdef _WIN32
-
-#else
         fcntl( fd , F_SETFL , FNDELAY );
-#endif
     }
 
     return fd;
@@ -319,6 +330,7 @@ void set_baud_rate( int fd , speed_t speed ) {
     // Set the new options for the port
     tcsetattr( fd , TCSANOW , &options );
 }
+#endif
 
 void msg( std::string msg ) {
     std::cout << msg << std::endl;

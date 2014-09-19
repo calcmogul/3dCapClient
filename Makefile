@@ -35,7 +35,7 @@ LD := g++
 # Platform specific variables
 ifeq ($(OS), Windows_NT)
         # Specify Windows libs with -l directives here
-	LDFLAGS :=
+	LDFLAGS := -lsfml-graphics -lsfml-window -lsfml-system
 
         # Assign executable name
 	EXEC := $(NAME).exe

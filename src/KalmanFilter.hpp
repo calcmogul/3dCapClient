@@ -7,8 +7,8 @@
 #ifndef KALMAN_FILTER_HPP
 #define KALMAN_FILTER_HPP
 
-#include <mutex>
-#include <chrono>
+#include <SFML/System/Mutex.hpp>
+#include <SFML/System/Clock.hpp>
 
 class KalmanFilter {
 public:
@@ -26,7 +26,7 @@ public:
 
 private:
     // Used for getting and setting variables between main and sampling thread
-    std::mutex m_dataMutex;
+    sf::Mutex m_dataMutex;
 
     // Running estimate of state calculated by filter
     double m_xHat;
@@ -41,10 +41,10 @@ private:
     double m_R;
 
     // Holds dt in update()
-    std::chrono::duration<double> m_dt;
+    double m_dt;
 
     // Used to find dt in update()
-    std::chrono::time_point<std::chrono::system_clock> m_lastTime;
+    sf::Clock m_time;
 
     // If true, update() sets current estimate to first measurement
     bool m_firstRun;

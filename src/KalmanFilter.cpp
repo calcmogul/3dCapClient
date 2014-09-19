@@ -17,7 +17,7 @@ void KalmanFilter::update( double input ) {
     m_dataMutex.lock();
 
     // Get the current dt since the last call to update()
-    m_dt = std::chrono::system_clock::now() - m_lastTime;
+    m_dt = m_time.getElapsedTime().asSeconds();
 
     // Initialize estimate to measured value
     if ( m_firstRun ) {
@@ -27,7 +27,7 @@ void KalmanFilter::update( double input ) {
     }
 
     // Make a prediction - project the error covariance ahead
-    m_P += m_Q * m_dt.count();
+    m_P += m_Q * m_dt;
 
     /* Calculate the Kalman gain
      *   (m_P + m_R) is S, the estimate error
@@ -49,7 +49,7 @@ void KalmanFilter::update( double input ) {
     }
 
     // Update the previous time for the next delta
-    m_lastTime = std::chrono::system_clock::now();
+    m_time.restart();
 
     m_dataMutex.unlock();
 }
@@ -85,8 +85,8 @@ void KalmanFilter::reset() {
 
     m_xHat = 0.0;
     m_P = 0.0;
-    m_dt = std::chrono::duration<double>::zero();
-    m_lastTime = std::chrono::system_clock::now();
+    m_dt = 0.0;
+    m_time.restart();
     m_firstRun = true;
 
     m_dataMutex.unlock();
