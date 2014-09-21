@@ -25,3 +25,7 @@ void WeightedAverageFilter::update( float input ) {
 void WeightedAverageFilter::reset() {
     m_avg = 0;
 }
+
+float WeightedAverageFilter::getEstimate() {
+    return m_avg;
+}

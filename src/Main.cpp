@@ -7,6 +7,9 @@
 #include <iostream>
 #include <string>
 
+#define ENABLE_SERIAL 1
+#define USE_GLU_SPHERE 1
+
 #ifdef _WIN32
 #include "SerialPort.hpp"
 #else
@@ -21,9 +24,13 @@
 #include "KalmanFilter.hpp"
 #include "Util.hpp"
 
-#include <SFML/Graphics/RenderWindow.hpp>
+#include <SFML/Window/Window.hpp>
+#include <SFML/OpenGL.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
+
+#include <GL/gl.h>
+#include <GL/glu.h>
 
 #ifndef _WIN32
 // portLabel example: S0, S1, ACM0
@@ -38,11 +45,17 @@ const unsigned int subDivs = 3; // board sub-subDivsisions
 Normalize n[sen];
 WeightedAverageFilter* cama[sen];
 KalmanFilter* axyz[sen];
-bool moves[2 * subDivs * subDivs * subDivs];
+bool moves[2][subDivs][subDivs][subDivs];
 
 void resetVariables() {
-    for ( unsigned int i = 0 ; i < 2 * subDivs * subDivs * subDivs ; i++ ) {
-        moves[i] = false;
+    for ( unsigned int i = 0 ; i < 2 ; i++ ) {
+        for ( unsigned int j = 0 ; j < subDivs ; j++ ) {
+            for ( unsigned int k = 0 ; k < subDivs ; k++ ) {
+                for ( unsigned int l = 0 ; l < subDivs ; l++ ) {
+                    moves[i][j][k][l] = false;
+                }
+            }
+        }
     }
 
     for( unsigned int i = 0 ; i < sen ; i++ ) {
@@ -70,7 +83,116 @@ int getPosition( float x ) {
     }
 }
 
+/* fillType can be either GL_FILL or GL_LINE
+ * GL_FILL fills surface with color; GL_LINE draws frame
+ */
+void drawBox( float width , GLenum fillType ) {
+    float height = width, depth = width;
+
+    glPushMatrix();
+
+    // Add equally to x and z to move up and down in finished view
+    glTranslatef( -width / 2 , -height / 2 , depth / 2 );
+
+    if ( fillType == GL_FILL ) {
+        glBegin( GL_TRIANGLE_STRIP );
+        // Front right vertical line
+        glVertex3f( width , 0 , 0 );
+        glVertex3f( width , height , 0 );
+
+        // Rear right vertical line
+        glVertex3f( width , 0 , -depth );
+        glVertex3f( width , height , -depth );
+
+        // Rear left verical line
+        glVertex3f( 0 , 0 , -depth );
+        glVertex3f( 0 , height , -depth );
+
+        // Front left vertical line
+        glVertex3f( 0 , 0 , 0 );
+        glVertex3f( 0 , height , 0 );
+
+        // Front right vertical line
+        glVertex3f( width , 0 , 0 );
+        glVertex3f( width , height , 0 );
+        glEnd();
+    }
+    else if ( fillType == GL_LINE ) {
+        // Front face
+        glBegin( GL_LINE_STRIP );
+        glVertex3f( width , 0 , 0 );
+        glVertex3f( width , height , 0 );
+        glVertex3f( 0 , height , 0 );
+        glVertex3f( 0 , 0 , 0 );
+        glVertex3f( width , 0 , 0 );
+        glEnd();
+
+        // Right face
+        glBegin( GL_LINE_STRIP );
+        glVertex3f( width , 0 , 0 );
+        glVertex3f( width , 0 , -depth );
+        glVertex3f( width , height , -depth );
+        glVertex3f( width , height , 0 );
+        glEnd();
+
+        // Rear face
+        glBegin( GL_LINE_STRIP );
+        glVertex3f( width , 0 , -depth );
+        glVertex3f( 0 , 0 , -depth );
+        glVertex3f( 0 , height , -depth );
+        glVertex3f( width , height , -depth );
+        glEnd();
+
+        // Left face
+        glBegin( GL_LINE_STRIP );
+        glVertex3f( 0 , 0 , -depth );
+        glVertex3f( 0 , 0 , 0 );
+        glVertex3f( 0 , height , 0 );
+        glVertex3f( 0 , height , -depth );
+        glEnd();
+    }
+
+    glPopMatrix();
+}
+
+#if !USE_GLU_SPHERE
+void drawSphere( float radius , float slices , float stacks ) {
+    glBegin( GL_TRIANGLE_STRIP );
+
+    for ( float phi = 0.f ; phi < 180.f ; phi += 180.f / stacks ) {
+        for ( float theta = 0.f ; theta < 360.f ; theta += 360.f / slices ) {
+            glVertex3f(
+                    radius * sin( phi * M_PI / 180.f ) * cos( theta * M_PI / 180.f ) ,
+                    radius * sin( phi * M_PI / 180.f ) * sin( theta * M_PI / 180.f ) ,
+                    radius * cos( phi * M_PI / 180.f )
+            );
+
+            glVertex3f(
+                    radius * sin( (phi + 180.f / stacks) * M_PI / 180.f ) * cos( theta * M_PI / 180.f ) ,
+                    radius * sin( (phi + 180.f / stacks) * M_PI / 180.f ) * sin( theta * M_PI / 180.f ) ,
+                    radius * cos( (phi + 180.f / stacks) * M_PI / 180.f )
+            );
+        }
+
+        glVertex3f(
+                radius * sin( phi * M_PI / 180.f ) ,
+                0.f ,
+                radius * cos( phi * M_PI / 180.f )
+        );
+
+        glVertex3f(
+                radius * sin( (phi + 180.f / stacks) * M_PI / 180.f ) ,
+                0.f ,
+                radius * cos( (phi + 180.f / stacks) * M_PI / 180.f )
+        );
+    }
+
+    glEnd();
+}
+#endif
+
 int main() {
+#if ENABLE_SERIAL
     /* The argument to open_port should be the serial port of your Arduino.
      *
      * i.e. in Windows, if you have 3 ports: COM1, COM2, COM3 and your Arduino
@@ -94,9 +216,10 @@ int main() {
 
     set_baud_rate( serialPort , B115200 );
 #endif
+#endif // ENABLE_SERIAL
 
     float nxyz[sen];
-    int ixyz[sen];
+    unsigned int ixyz[sen];
 
     float w = 256; // board size
     bool flip[3] = { false , true , false };
@@ -104,32 +227,44 @@ int main() {
     int player = 0;
 
     // Setup
-    sf::RenderWindow mainWin( sf::VideoMode( 800 , 600 ) , "3D Capacitor Demo" ,
+    sf::Window mainWin( sf::VideoMode( 800 , 600 ) , "3D Capacitor Demo" ,
             sf::Style::Titlebar | sf::Style::Close );
     mainWin.setFramerateLimit( 25 );
 
-#if 0
-    PFont font;
+    /* ===== Initialize OpenGL ===== */
+    glClearColor( 1.f , 1.f , 1.f , 1.f );
+    glClearDepth( 0.f );
+    glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-    size(800, 600, OPENGL);
-    frameRate(25);
+    glDepthFunc( GL_LESS );
+    glDepthMask( GL_TRUE );
+    glEnable( GL_DEPTH_TEST );
+    glEnable( GL_BLEND );
+    glEnable( GL_ALPHA_TEST );
+    glDisable( GL_TEXTURE_2D );
+    glBlendFunc( GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA );
+    glShadeModel( GL_FLAT );
 
-    font = loadFont("TrebuchetMS-Italic-20.vlw");
-    textFont(font);
-    textMode(SHAPE);
-#endif
+    // Set up screen
+    glViewport( 0 , 0 , 800 , 600 );
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+    glOrtho( -400 , 400 , -300 , 300 , -1000.f , 1000.f );
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
+    /* ============================= */
 
     for ( unsigned int i = 0 ; i < sen ; i++ ) {
         cama[i] = new WeightedAverageFilter( 0.01 );
 
         if ( i == 0 ) {
-            axyz[i] = new KalmanFilter( 0.00006 , 0.10 ); // x (left plate)
+            axyz[i] = new KalmanFilter( 0.00006 , 0.0001 ); // x (left plate)
         }
         else if ( i == 1 ) {
-            axyz[i] = new KalmanFilter( 0.00006 , 0.10 ); // y (bottom plate)
+            axyz[i] = new KalmanFilter( 0.00006 , 0.0001 ); // y (bottom plate)
         }
         else if ( i == 2 ) {
-            axyz[i] = new KalmanFilter( 0.00006 , 0.10 ); // z (right plate)
+            axyz[i] = new KalmanFilter( 0.00006 , 0.0001 ); // z (right plate)
         }
     }
 
@@ -137,7 +272,6 @@ int main() {
 
     // Used to store data read from serialPort port
     std::string serialPortData;
-    char curChar = '\0';
 
     sf::Event event;
     while ( mainWin.isOpen() ) {
@@ -147,7 +281,7 @@ int main() {
             }
             else if ( event.type == sf::Event::KeyPressed ) {
                 if ( event.key.code == sf::Keyboard::Tab ) {
-                    moves[player * ixyz[0] * ixyz[1]* ixyz[2]] = true;
+                    moves[player][ixyz[0]][ixyz[1]][ixyz[2]] = true;
                     player = player == 0 ? 1 : 0;
                 }
             }
@@ -158,17 +292,17 @@ int main() {
             }
         }
 
+#if ENABLE_SERIAL
         // Read line of serialPort data
+        char curChar = '\0';
 #ifdef _WIN32
         while ( serialPort.ReadData( &curChar , 1 ) != -1 && curChar != '\n' ) {
-            serialPortData += curChar;
-        }
 #else
         while ( read( serialPort , &curChar , 1 ) != 0 && curChar != '\n' &&
                 curChar != '\0' ) {
+#endif
             serialPortData += curChar;
         }
-#endif
 
         // If curChar == '\n', there is a new line of complete data
         if ( curChar == '\n' ) {
@@ -205,76 +339,92 @@ int main() {
             serialPortData.clear();
             curChar = '\0';
         }
+#endif // ENABLE_SERIAL
 
-        // Redraw board
-        mainWin.clear( sf::Color::White );
+        // Clear the buffers
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
-#if 0
-        float h = w / 2;
-        camera(
-          h + (cama[0].avg - cama[2].avg) * h,
-          h + (cama[1].avg - 1) * height / 2,
+        glPushMatrix();
+
+        gluLookAt(
+          w / 2 + (cama[0]->getEstimate() - cama[2]->getEstimate()) * w / 2,
+          w / 2 + (cama[1]->getEstimate() - 1) * 600 / 2,
           w * 2,
-          h, h, h,
+          w / 2, w / 2, w / 2,
           0, 1, 0);
 
-        pushMatrix();
+        glPushMatrix();
 
-        // Due to a currently unresolved issue with Processing 2.0.3 and OpenGL depth sorting,
-        // we can't fill the large box without hiding the rest of the boxes in the scene.
-        // We'll use a stroke for this one instead.
-        noFill();
-        stroke(0, 40);
-        translate(w/2, w/2, w/2);
-        rotateY(-HALF_PI/2);
-        box(w);
-        popMatrix();
+        // Draw outer boundary box
+        glColor4ub( 0 , 0 , 0 , 40 );
+        glTranslatef( w / 2 , w / 2 , w / 2 );
+        glRotatef( -45.f , 0.f , 1.f , 0.f );
+        drawBox( w , GL_LINE );
+
+        glPopMatrix();
 
         float sw = w / subDivs;
-        translate(h, sw / 2, 0);
-        rotateY(-HALF_PI/2);
 
-        pushMatrix();
+        glTranslatef( w / 2 , sw / 2 , 0 );
+        glRotatef( -45.f , 0.f , 1.f , 0.f );
+
+        glPushMatrix();
         float sd = sw * (subDivs - 1);
-        translate(
-          axyz[0].getEstimate() * sd,
-          axyz[1].getEstimate() * sd,
-          axyz[2].getEstimate() * sd);
-        fill(255, 160, 0, 200);
-        noStroke();
-        sphere(18);
-        popMatrix();
 
-        for(int z = 0; z < subDivs; z++) {
-          for(int y = 0; y < subDivs; y++) {
-            for(int x = 0; x < subDivs; x++) {
-              pushMatrix();
-              translate(x * sw, y * sw, z * sw);
+        glTranslatef(
+          axyz[0]->getEstimate() * sd,
+          axyz[1]->getEstimate() * sd,
+          axyz[2]->getEstimate() * sd);
 
-              noStroke();
-              if(moves[0][x][y][z])
-                fill(255, 0, 0, 200); // transparent red
-              else if(moves[1][x][y][z])
-                fill(0, 0, 255, 200); // transparent blue
-              else if(
-              x == ixyz[0] &&
-                y == ixyz[1] &&
-                z == ixyz[2])
-                if(player == 0)
-                  fill(255, 0, 0, 200); // transparent red
-                else
-                  fill(0, 0, 255, 200); // transparent blue
-              else
-                fill(0, 100); // transparent grey
-              box(sw / 3);
+        glColor4ub( 255 , 160 , 0 , 200 );
+#if !USE_GLU_SPHERE
+        drawSphere( 18 , 32 , 32 );
+#else
+        GLUquadricObj* sphere = gluNewQuadric();
+        if ( sphere != NULL ) {
+            gluQuadricNormals( sphere , GLU_SMOOTH );
+            gluSphere( sphere , 18 , 32 , 32 );
+            gluDeleteQuadric( sphere );
+        }
+#endif
 
-              popMatrix();
+        glPopMatrix();
+
+        for ( unsigned int z = 0 ; z < subDivs ; z++ ) {
+            for ( unsigned int y = 0 ; y < subDivs ; y++ ) {
+                for ( unsigned int x = 0 ; x < subDivs ; x++ ) {
+                    glPushMatrix();
+
+                    glTranslatef( x * sw , y * sw , z * sw );
+
+                    if ( moves[0][x][y][z] ) {
+                        glColor4ub( 255 , 0 , 0 , 200 ); // transparent red
+                    }
+                    else if ( moves[1][x][y][z] ) {
+                        glColor4ub( 0 , 0 , 255 , 200 ); // transparent blue
+                    }
+                    else if (
+                            x == ixyz[0] &&
+                            y == ixyz[1] &&
+                            z == ixyz[2]) {
+                        if ( player == 0 ) {
+                            glColor4ub( 255 , 0 , 0 , 200 ); // transparent red
+                        }
+                        else {
+                            glColor4ub( 0 , 0 , 255 , 200 ); // transparent blue
+                        }
+                    }
+                    else {
+                        glColor4ub( 100 , 100 , 100 , 100 ); // transparent gray
+                    }
+                    drawBox( sw / 3 , GL_FILL );
+
+                    glPopMatrix();
+                }
             }
-          }
         }
 
-        stroke(0);
-#endif
+        glPopMatrix();
 
         mainWin.display();
 
@@ -288,9 +438,11 @@ int main() {
         delete axyz[i];
     }
 
+#if ENABLE_SERIAL
 #ifndef _WIN32
     close ( serialPort );
 #endif
+#endif // ENABLE_SERIAL
 
     return 0;
 }

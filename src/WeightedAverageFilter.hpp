@@ -15,6 +15,9 @@ public:
     void update( float input );
     void reset();
 
+    // Return the filtered value
+    float getEstimate();
+
 private:
     float m_adapt;
     float m_avg;

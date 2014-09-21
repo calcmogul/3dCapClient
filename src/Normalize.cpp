@@ -65,6 +65,6 @@ float Normalize::linearize( float value ) {
 }
 
 void Normalize::reset() {
-    m_min = -INFINITY;
-    m_max = INFINITY;
+    m_min = INFINITY;
+    m_max = -INFINITY;
 }
