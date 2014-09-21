@@ -346,6 +346,11 @@ int main() {
 
         glPushMatrix();
 
+        /* The sensor's coordinate axes are oriented differently from OpenGL's
+         * axes, so rotate the view until they match.
+         */
+        glRotatef( 180.f , 1.f , 0.f , 0.f );
+
         gluLookAt(
           w / 2 + (cama[0]->getEstimate() - cama[2]->getEstimate()) * w / 2,
           w / 2 + (cama[1]->getEstimate() - 1) * 600 / 2,
