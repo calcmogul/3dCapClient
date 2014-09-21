@@ -125,6 +125,12 @@ long chargeTime( int pin ) {
             "nop\n\t"
             "nop\n\t"
             "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
         );
 
         // Set pin to INPUT
@@ -196,6 +202,12 @@ long chargeTime( int pin ) {
             "nop\n\t"
             "nop\n\t"
             "nop\n\t"
+
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
         );
 
         // Count until pin switches state (until capacitor charges)
@@ -217,6 +229,11 @@ void restartTimer() {
 }
 
 unsigned long checkTimer() {
-    return ((timer0_overflow_count << 8) + TCNT0) << 2;
+    /* Left bitshift of 2 was " * (64 / clockCyclesPerMicrosecond())"
+     * = 64 / 16
+     * = 4
+     * Multiplying by 4 is same as left bitshift of 2
+     */
+    return ((timer0_overflow_count << 8) | TCNT0) << 2;
 }
 
