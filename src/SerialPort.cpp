@@ -1,76 +1,141 @@
-#include "SerialPort.hpp"
+//=============================================================================
+//File Name: SerialPort.cpp
+//Description: Provides an interface for communicating with an Arduino via the
+//             serial port
+//Author: Tyler Veness
+//=============================================================================
 
-#ifdef _WIN32
+#include "SerialPort.hpp"
+#include <iostream>
+
+#ifndef _WIN32
+#include <unistd.h>  // UNIX standard function definitions
+#include <fcntl.h>   // File control definitions
+#include <errno.h>   // Error number definitions
+#include <termios.h> // POSIX terminal control definitions
+#endif
+
+const unsigned int SerialPort::m_waitTime = 2000;
 
 SerialPort::SerialPort( const char* portName ) {
     // We're not yet connected
     m_connected = false;
 
-    // Try to connect to the given port throuh CreateFile
-    hSerial = CreateFile( portName,
-            GENERIC_READ | GENERIC_WRITE,
-            0,
-            NULL,
-            OPEN_EXISTING,
-            FILE_ATTRIBUTE_NORMAL,
-            NULL);
+    // Try to connect to the given port
+#ifdef _WIN32
+    hSerial = CreateFile( portName ,
+            GENERIC_READ | GENERIC_WRITE ,
+            0 ,
+            NULL ,
+            OPEN_EXISTING ,
+            FILE_ATTRIBUTE_NORMAL ,
+            NULL );
+#else
+    m_fd = open( portName , O_RDONLY | O_NOCTTY | O_NDELAY );
+#endif
 
-    // Check if the connection was successful
+    // Check if connection was successful
+#ifdef _WIN32
     if ( hSerial == INVALID_HANDLE_VALUE ) {
-        // If not successful display an Error
+        std::cout << __FILE__ << ": Unable to open " << portName << "\n";
         if ( GetLastError() == ERROR_FILE_NOT_FOUND ) {
-            printf( "ERROR: Handle was not attached. Reason: %s not available.\n", portName );
+            std::cout << ": No such file or directory\n";
         }
-        else {
-            printf( "ERROR!!!" );
-        }
+
+        return;
+    }
+#else
+    if ( m_fd == -1 ) {
+        std::cout << __FILE__ << ": Unable to open " << portName
+                  << ": No such file or directory\n";
+
+        return;
     }
     else {
-        DCB dcbSerialPortParams = {0};
+        fcntl( m_fd , F_SETFL , FNDELAY );
+    }
+#endif
 
-        // Try to get the current comm parameters
-        if ( !GetCommState( hSerial, &dcbSerialPortParams ) ) {
-            // If impossible, show an error
-            printf( "failed to get current serial parameters!" );
-        }
-        else {
-            // Define serial connection parameters for the Arduino board
-            dcbSerialPortParams.BaudRate = CBR_115200;
-            dcbSerialPortParams.ByteSize = 8;
-            dcbSerialPortParams.StopBits = ONESTOPBIT;
-            dcbSerialPortParams.Parity = NOPARITY;
+    // Set baud rate
+#ifdef _WIN32
+    DCB dcbSerialPortParams = {0};
 
-            // Set the parameters and check for their proper application
-            if( !SetCommState( hSerial, &dcbSerialPortParams ) ) {
-               printf( "ALERT: Could not set SerialPort Port parameters" );
-            }
-            else {
-                // If everything went fine we're connected
-                m_connected = true;
+    // Try to get the current comm parameters
+    if ( !GetCommState( hSerial, &dcbSerialPortParams ) ) {
+        // If impossible, show an error
+        std::cout << __FILE__
+                 << ": Unable to retrieve current serial parameters for "
+                 << portName << "\n";
 
-                // We wait 2s as the Arduino board will be reseting
-                Sleep( ARDUINO_WAIT_TIME );
-            }
+        return;
+    }
+    else {
+        // Define serial connection parameters for the Arduino board
+        dcbSerialPortParams.BaudRate = CBR_115200;
+        dcbSerialPortParams.ByteSize = 8;
+        dcbSerialPortParams.StopBits = ONESTOPBIT;
+        dcbSerialPortParams.Parity = NOPARITY;
+
+        // Set the parameters and check for their proper application
+        if ( !SetCommState( hSerial, &dcbSerialPortParams ) ) {
+            std::cout << __FILE__
+                      << ": Unable to set serial port parameters for "
+                      << portName << "\n";
+
+            return;
         }
     }
+#else
+    struct termios options;
+
+    // Get the current options for the port
+    tcgetattr( m_fd , &options );
+
+    // Set the baud rates
+    cfsetispeed( &options , B115200 );
+    cfsetospeed( &options , B115200 );
+
+    // Enable the receiver and set local mode
+    options.c_cflag |= (CLOCAL | CREAD);
+
+    // Set the new options for the port
+    tcsetattr( m_fd , TCSANOW , &options );
+#endif
+
+    m_connected = true;
+
+    // We wait as the Arduino board will be reseting
+#ifdef _WIN32
+    Sleep( m_waitTime );
+#else
+    struct timespec sleepTime;
+    sleepTime.tv_sec = m_waitTime / 1000;
+    sleepTime.tv_nsec = (m_waitTime % 1000) * 1000000;
+    nanosleep( &sleepTime , NULL );
+#endif
 }
 
 SerialPort::~SerialPort() {
     // Disconnect if necessary
     if ( m_connected ) {
+#ifdef _WIN32
         CloseHandle( hSerial );
+#else
+        close( m_fd );
+#endif
         m_connected = false;
     }
 }
 
-int SerialPort::ReadData( char* buffer, unsigned int nbChar ) {
+int SerialPort::read( char* buffer , unsigned int nbChar ) {
+#ifdef _WIN32
     // Number of bytes we'll have read
     DWORD bytesRead;
     // Number of bytes we'll really ask to read
     unsigned int toRead;
 
     // Use the ClearCommError function to get status info on the SerialPort port
-    ClearCommError( hSerial, &m_errors, &m_status );
+    ClearCommError( hSerial , &m_errors , &m_status );
 
     // Check if there is something to read
     if ( m_status.cbInQue > 0 ) {
@@ -88,34 +153,43 @@ int SerialPort::ReadData( char* buffer, unsigned int nbChar ) {
         /* Try to read the require number of chars, and return the number of
          * read bytes on success
          */
-        if ( ReadFile( hSerial, buffer, toRead, &bytesRead, NULL ) && bytesRead != 0 ) {
+        if ( ReadFile( hSerial , buffer , toRead , &bytesRead , NULL ) ) {
             return bytesRead;
         }
-
+        else {
+            buffer[0] = '\0';
+            return 0;
+        }
     }
-
-    // If nothing has been read, or that an error was detected, return -1
-    return -1;
+    else {
+        // There are no bytes to read
+        return 0;
+    }
+#else
+    return ::read( m_fd , buffer , nbChar );
+#endif
 }
 
-
-bool SerialPort::WriteData( char* buffer, unsigned int nbChar ) {
+bool SerialPort::write( char* buffer , unsigned int nbChar ) {
+#ifdef _WIN32
     DWORD bytesSend;
 
-    // Try to write the buffer on the SerialPort port
-    if( !WriteFile( hSerial, (void*)buffer, nbChar, &bytesSend, 0 ) ) {
-        // In case it don't work get comm error and return false
-        ClearCommError( hSerial, &m_errors, &m_status );
+    // Try to write the buffer on the serial port
+    if( !WriteFile( hSerial , static_cast<void*>(buffer) , nbChar , &bytesSend , 0 ) ) {
+        // Write failed, so retrieve comm error
+        ClearCommError( hSerial , &m_errors , &m_status );
 
         return false;
     }
     else {
         return true;
     }
+#else
+    // Not implemented
+    return false;
+#endif
 }
 
-bool SerialPort::IsConnected() {
+bool SerialPort::isConnected() {
     return m_connected;
 }
-
-#endif

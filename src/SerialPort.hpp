@@ -1,14 +1,17 @@
+//=============================================================================
+//File Name: SerialPort.hpp
+//Description: Provides an interface for communicating with an Arduino via the
+//             serial port
+//Author: Tyler Veness
+//=============================================================================
+
 #ifndef SERIAL_PORT_HPP
 #define SERIAL_PORT_HPP
 
 #ifdef _WIN32
-
-#define ARDUINO_WAIT_TIME 2000
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include <cstdio>
-#include <cstdlib>
+#endif
 
 class SerialPort {
 public:
@@ -25,30 +28,35 @@ public:
      * bytes available, it will return only the bytes available. The function
      * return -1 when nothing could be read, the number of bytes actually read.
      */
-    int ReadData( char* buffer, unsigned int nbChar );
+    int read( char* buffer , unsigned int nbChar );
 
-    /* Writes data from a buffer through the SerialPort connection. Returns true on
-     * success.
+    /* Writes data from a buffer through the SerialPort connection. Returns
+     * true on success; returns false on failure.
      */
-    bool WriteData( char* buffer, unsigned int nbChar );
+    bool write( char* buffer , unsigned int nbChar );
 
     // Check if we are actually connected
-    bool IsConnected();
+    bool isConnected();
 
 private:
+#ifdef _WIN32
     // SerialPort comm handler
     HANDLE hSerial;
-
-    // Connection status
-    bool m_connected;
 
     // Get various information about the connection
     COMSTAT m_status;
 
     // Keep track of last error
     DWORD m_errors;
-};
-
+#else
+    int m_fd;
 #endif
+
+    // Connection status
+    bool m_connected;
+
+    // Time to wait after intial Arduino connection in milliseconds
+    static const unsigned int m_waitTime;
+};
 
 #endif // SERIAL_PORT_HPP

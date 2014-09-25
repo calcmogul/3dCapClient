@@ -10,14 +10,7 @@
 #define ENABLE_SERIAL 1
 #define USE_GLU_SPHERE 1
 
-#ifdef _WIN32
 #include "SerialPort.hpp"
-#else
-#include <unistd.h>  // UNIX standard function definitions
-#include <fcntl.h>   // File control definitions
-#include <errno.h>   // Error number definitions
-#include <termios.h> // POSIX terminal control definitions
-#endif
 
 #include "Normalize.hpp"
 #include "WeightedAverageFilter.hpp"
@@ -32,11 +25,6 @@
 #include <GL/gl.h>
 #include <GL/glu.h>
 
-#ifndef _WIN32
-// portLabel example: S0, S1, ACM0
-int open_port( const char* portLabel );
-void set_baud_rate( int fd , speed_t speed );
-#endif
 void msg( std::string msg );
 
 const unsigned int sen = 3; // sensors
@@ -203,19 +191,12 @@ int main() {
      */
 #ifdef _WIN32
     SerialPort serialPort( "\\\\.\\COM1" );
-
-    if ( !serialPort.IsConnected() ) {
-        return 0;
-    }
 #else
-    int serialPort = open_port( "/dev/ttyACM0" );
-
-    if ( serialPort == -1 ) {
+    SerialPort serialPort( "/dev/ttyACM0" );
+#endif
+    if ( !serialPort.isConnected() ) {
         return 0;
     }
-
-    set_baud_rate( serialPort , B115200 );
-#endif
 #endif // ENABLE_SERIAL
 
     float nxyz[sen];
@@ -255,7 +236,7 @@ int main() {
     /* ============================= */
 
     for ( unsigned int i = 0 ; i < sen ; i++ ) {
-        cama[i] = new WeightedAverageFilter( 0.01 );
+        cama[i] = new WeightedAverageFilter( 0.04 );
 
         if ( i == 0 ) {
             axyz[i] = new KalmanFilter( 0.00006 , 0.0001 ); // x (left plate)
@@ -295,18 +276,15 @@ int main() {
 #if ENABLE_SERIAL
         // Read line of serialPort data
         char curChar = '\0';
-#ifdef _WIN32
-        while ( serialPort.ReadData( &curChar , 1 ) != -1 && curChar != '\n' ) {
-#else
-        while ( read( serialPort , &curChar , 1 ) != 0 && curChar != '\n' &&
+        char numRead = 0;
+        while ( (numRead = serialPort.read( &curChar , 1 )) != 0 && curChar != '\n' &&
                 curChar != '\0' ) {
-#endif
             serialPortData += curChar;
         }
 
         // If curChar == '\n', there is a new line of complete data
-        if ( curChar == '\n' ) {
-            std::cout << serialPortData << std::endl;
+        if ( numRead != 0 && curChar == '\n' ) {
+            std::cout << "\n\"" << serialPortData << "\" " << serialPortData.length() << "\n" << std::endl;
 
             std::vector<std::string> parts = split( serialPortData , " " );
             if ( parts.size() == sen ) {
@@ -338,6 +316,7 @@ int main() {
             // Reset serial data storage in preparation for new line of data
             serialPortData.clear();
             curChar = '\0';
+            numRead = 0;
         }
 #endif // ENABLE_SERIAL
 
@@ -443,51 +422,8 @@ int main() {
         delete axyz[i];
     }
 
-#if ENABLE_SERIAL
-#ifndef _WIN32
-    close ( serialPort );
-#endif
-#endif // ENABLE_SERIAL
-
     return 0;
 }
-
-#ifndef _WIN32
-int open_port( const char* portLabel ) {
-    std::string name( portLabel );
-
-    int fd = open( name.c_str() , O_RDONLY | O_NOCTTY | O_NDELAY );
-
-    if ( fd == -1 ) {
-        // Couldn't open the port
-        std::string str( __FUNCTION__ );
-        str += ": Unable to open " + name;
-        perror( str.c_str() );
-    }
-    else {
-        fcntl( fd , F_SETFL , FNDELAY );
-    }
-
-    return fd;
-}
-
-void set_baud_rate( int fd , speed_t speed ) {
-    struct termios options;
-
-    // Get the current options for the port
-    tcgetattr( fd , &options );
-
-    // Set the baud rates
-    cfsetispeed( &options , speed );
-    cfsetospeed( &options , speed );
-
-    // Enable the receiver and set local mode
-    options.c_cflag |= (CLOCAL | CREAD);
-
-    // Set the new options for the port
-    tcsetattr( fd , TCSANOW , &options );
-}
-#endif
 
 void msg( std::string msg ) {
     std::cout << msg << std::endl;

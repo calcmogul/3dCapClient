@@ -19,11 +19,18 @@ void WeightedAverageFilter::update( float input ) {
         return;
     }
 
-    m_avg = (m_avg * (1 - m_adapt)) + (input * m_adapt);
+    // Get the current dt since the last call to update()
+    m_dt = m_time.getElapsedTime().asSeconds();
+
+    m_avg = (m_avg * (1 - m_adapt * m_dt)) + (input * m_adapt * m_dt);
+
+    // Update the previous time for the next delta
+    m_time.restart();
 }
 
 void WeightedAverageFilter::reset() {
     m_avg = 0;
+    m_time.restart();
 }
 
 float WeightedAverageFilter::getEstimate() {
