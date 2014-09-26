@@ -7,12 +7,14 @@
 
 #include "SerialPort.hpp"
 #include <iostream>
+#include <cstring>
 
 #ifndef _WIN32
 #include <unistd.h>  // UNIX standard function definitions
 #include <fcntl.h>   // File control definitions
 #include <errno.h>   // Error number definitions
 #include <termios.h> // POSIX terminal control definitions
+#include <dirent.h>  // Method for listing serial ports
 #endif
 
 const unsigned int SerialPort::m_waitTime = 2000;
@@ -20,6 +22,23 @@ const unsigned int SerialPort::m_waitTime = 2000;
 SerialPort::SerialPort( const char* portName ) {
     // We're not yet connected
     m_connected = false;
+
+    connect( portName );
+}
+
+SerialPort::~SerialPort() {
+    disconnect();
+}
+
+void SerialPort::connect( const char* portName ) {
+    // Disconnect before reconnecting or connecting to a different serial port
+    if ( m_connected ) {
+        disconnect();
+    }
+
+    if ( portName != NULL ) {
+        m_portName = portName;
+    }
 
     // Try to connect to the given port
 #ifdef _WIN32
@@ -37,7 +56,7 @@ SerialPort::SerialPort( const char* portName ) {
     // Check if connection was successful
 #ifdef _WIN32
     if ( hSerial == INVALID_HANDLE_VALUE ) {
-        std::cout << __FILE__ << ": Unable to open " << portName << "\n";
+        std::cout << __FILE__ << ": Unable to open " << portName << '\n';
         if ( GetLastError() == ERROR_FILE_NOT_FOUND ) {
             std::cout << ": No such file or directory\n";
         }
@@ -46,7 +65,7 @@ SerialPort::SerialPort( const char* portName ) {
     }
 #else
     if ( m_fd == -1 ) {
-        std::cout << __FILE__ << ": Unable to open " << portName
+        std::cout << __FILE__ << ": Unable to open " << m_portName
                   << ": No such file or directory\n";
 
         return;
@@ -65,7 +84,7 @@ SerialPort::SerialPort( const char* portName ) {
         // If impossible, show an error
         std::cout << __FILE__
                  << ": Unable to retrieve current serial parameters for "
-                 << portName << "\n";
+                 << portName << '\n';
 
         return;
     }
@@ -80,7 +99,7 @@ SerialPort::SerialPort( const char* portName ) {
         if ( !SetCommState( hSerial, &dcbSerialPortParams ) ) {
             std::cout << __FILE__
                       << ": Unable to set serial port parameters for "
-                      << portName << "\n";
+                      << portName << '\n';
 
             return;
         }
@@ -115,7 +134,7 @@ SerialPort::SerialPort( const char* portName ) {
 #endif
 }
 
-SerialPort::~SerialPort() {
+void SerialPort::disconnect() {
     // Disconnect if necessary
     if ( m_connected ) {
 #ifdef _WIN32
@@ -190,6 +209,34 @@ bool SerialPort::write( char* buffer , unsigned int nbChar ) {
 #endif
 }
 
-bool SerialPort::isConnected() {
+bool SerialPort::isConnected() const {
     return m_connected;
+}
+
+std::vector<std::string> SerialPort::getSerialPorts() {
+    std::vector<std::string> ports;
+
+#ifdef _WIN32
+
+#else
+    DIR* d;
+    struct dirent* dir;
+    d = opendir( "/dev" );
+    if ( d ) {
+        while ( (dir = readdir( d )) != NULL ) {
+            if ( dir->d_type == DT_CHR &&
+                    (std::strncmp( dir->d_name , "ttyS" , sizeof("ttyS") - 1 ) == 0 ||
+                     std::strncmp( dir->d_name , "ttyACM" , sizeof("ttyACM") - 1 ) == 0) ) {
+                std::cout << dir->d_name << '\n';
+                std::string tmp = "/dev/";
+                tmp += dir->d_name;
+                ports.push_back( tmp );
+            }
+        }
+
+        closedir( d );
+    }
+#endif
+
+    return ports;
 }

@@ -7,7 +7,6 @@
 #include <iostream>
 #include <string>
 
-#define ENABLE_SERIAL 1
 #define USE_GLU_SPHERE 1
 
 #include "SerialPort.hpp"
@@ -180,7 +179,6 @@ void drawSphere( float radius , float slices , float stacks ) {
 #endif
 
 int main() {
-#if ENABLE_SERIAL
     /* The argument to open_port should be the serial port of your Arduino.
      *
      * i.e. in Windows, if you have 3 ports: COM1, COM2, COM3 and your Arduino
@@ -189,15 +187,7 @@ int main() {
      * i.e. in Linux, if you have 3 ports: /dev/ttyS0, /dev/ttyS1, /dev/tty2
      * and your Arduino is on ttyS1, pass "dev/ttyS1" in.
      */
-#ifdef _WIN32
-    SerialPort serialPort( "\\\\.\\COM1" );
-#else
-    SerialPort serialPort( "/dev/ttyACM0" );
-#endif
-    if ( !serialPort.isConnected() ) {
-        return 0;
-    }
-#endif // ENABLE_SERIAL
+    SerialPort serialPort( SerialPort::getSerialPorts()[0].c_str() );
 
     float nxyz[sen];
     unsigned int ixyz[sen];
@@ -253,6 +243,8 @@ int main() {
 
     // Used to store data read from serialPort port
     std::string serialPortData;
+    char curChar = '\0';
+    char numRead = 0;
 
     sf::Event event;
     while ( mainWin.isOpen() ) {
@@ -273,52 +265,57 @@ int main() {
             }
         }
 
-#if ENABLE_SERIAL
         // Read line of serialPort data
-        char curChar = '\0';
-        char numRead = 0;
-        while ( (numRead = serialPort.read( &curChar , 1 )) != 0 && curChar != '\n' &&
-                curChar != '\0' ) {
-            serialPortData += curChar;
-        }
+        if ( serialPort.isConnected() ) {
+            while ( (numRead = serialPort.read( &curChar , 1 )) > 0 && curChar != '\n' &&
+                    curChar != '\0' ) {
+                serialPortData += curChar;
+            }
 
-        // If curChar == '\n', there is a new line of complete data
-        if ( numRead != 0 && curChar == '\n' ) {
-            std::cout << "\n\"" << serialPortData << "\" " << serialPortData.length() << "\n" << std::endl;
+            if ( numRead == 0 || (numRead == -1 && errno != EAGAIN) ) {
+                // EOF has been reached (socket disconnected)
+                serialPort.disconnect();
+            }
+            // If curChar == '\n', there is a new line of complete data
+            else if ( curChar == '\n' && serialPortData.length() != 0 ) {
+                std::cout << "\"" << serialPortData << "\"\n";
 
-            std::vector<std::string> parts = split( serialPortData , " " );
-            if ( parts.size() == sen ) {
-                float xyz[3];
-                for ( unsigned int i = 0 ; i < sen ; i++ ) {
-                    xyz[i] = std::atof( parts[i].c_str() );
-                }
+                std::vector<std::string> parts = split( serialPortData , " " );
+                if ( parts.size() == sen ) {
+                    float xyz[3];
+                    for ( unsigned int i = 0 ; i < sen ; i++ ) {
+                        xyz[i] = std::atof( parts[i].c_str() );
+                    }
 
-                if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-                    for( unsigned int i = 0 ; i < sen ; i++ ) {
-                        n[i].expandRange( xyz[i] );
+                    if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
+                        for( unsigned int i = 0 ; i < sen ; i++ ) {
+                            n[i].expandRange( xyz[i] );
+                        }
+                    }
+
+                    for ( unsigned int i = 0 ; i < sen ; i++ ) {
+                        nxyz[i] = 0.f;
+                    }
+
+                    for ( unsigned int i = 0 ; i < sen ; i++ ) {
+                        float raw = n[i].linearize( xyz[i] );
+
+                        nxyz[i] = flip[i] ? 1 - raw : raw;
+                        cama[i]->update( nxyz[i] );
+                        axyz[i]->update( nxyz[i] );
+                        ixyz[i] = getPosition( axyz[i]->getEstimate() );
                     }
                 }
 
-                for ( unsigned int i = 0 ; i < sen ; i++ ) {
-                    nxyz[i] = 0.f;
-                }
-
-                for ( unsigned int i = 0 ; i < sen ; i++ ) {
-                    float raw = n[i].linearize( xyz[i] );
-
-                    nxyz[i] = flip[i] ? 1 - raw : raw;
-                    cama[i]->update( nxyz[i] );
-                    axyz[i]->update( nxyz[i] );
-                    ixyz[i] = getPosition( axyz[i]->getEstimate() );
-                }
+                // Reset serial data storage in preparation for new line of data
+                serialPortData.clear();
+                curChar = '\0';
+                numRead = 0;
             }
-
-            // Reset serial data storage in preparation for new line of data
-            serialPortData.clear();
-            curChar = '\0';
-            numRead = 0;
         }
-#endif // ENABLE_SERIAL
+        else {
+            serialPort.connect( SerialPort::getSerialPorts()[0].c_str() );
+        }
 
         // Clear the buffers
         glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
@@ -426,5 +423,5 @@ int main() {
 }
 
 void msg( std::string msg ) {
-    std::cout << msg << std::endl;
+    std::cout << msg << '\n';
 }
