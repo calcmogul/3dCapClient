@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <string>
+#include <cstdlib>
 
 #define USE_GLU_SPHERE 1
 
