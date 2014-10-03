@@ -130,7 +130,7 @@ void SerialPort::connect( const char* portName ) {
     struct timespec sleepTime;
     sleepTime.tv_sec = m_waitTime / 1000;
     sleepTime.tv_nsec = (m_waitTime % 1000) * 1000000;
-    nanosleep( &sleepTime , NULL );
+    //nanosleep( &sleepTime , NULL );
 #endif
 }
 
@@ -217,7 +217,18 @@ std::vector<std::string> SerialPort::getSerialPorts() {
     std::vector<std::string> ports;
 
 #ifdef _WIN32
+    HKEY hRegAdapters;
+    LONG res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, AdapterKey, 0, KEY_READ,
+            &hRegAdapters);
 
+    for ( DWORD Index=0 ; ; Index++ ) {
+        char SubKeyName[255];
+        DWORD cName = 255;
+        LONG res = RegEnumKeyEx( hRegAdapters , Index , SubKeyName , &cName , NULL , NULL , NULL , NULL );
+        if (res != ERROR_SUCCESS)
+            break;
+        // do something with Name
+    }
 #else
     DIR* d;
     struct dirent* dir;

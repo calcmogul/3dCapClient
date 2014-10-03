@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <cstdlib>
+#include <cmath>
 
 #define USE_GLU_SPHERE 1
 
@@ -33,19 +34,8 @@ const unsigned int subDivs = 3; // board sub-subDivsisions
 Normalize n[sen];
 WeightedAverageFilter* cama[sen];
 KalmanFilter* axyz[sen];
-bool moves[2][subDivs][subDivs][subDivs];
 
 void resetVariables() {
-    for ( unsigned int i = 0 ; i < 2 ; i++ ) {
-        for ( unsigned int j = 0 ; j < subDivs ; j++ ) {
-            for ( unsigned int k = 0 ; k < subDivs ; k++ ) {
-                for ( unsigned int l = 0 ; l < subDivs ; l++ ) {
-                    moves[i][j][k][l] = false;
-                }
-            }
-        }
-    }
-
     for( unsigned int i = 0 ; i < sen ; i++ ) {
         n[i].reset();
         cama[i]->reset();
@@ -53,16 +43,17 @@ void resetVariables() {
     }
 }
 
+#if 0
 float cutoff = 0.2;
 int getPosition( float x ) {
     if ( subDivs == 3 ) {
-        if ( x < cutoff ) {
+        if ( x < cutoff ) { // 0 < x < 0.2
             return 0;
         }
-        else if ( x < 1 - cutoff ) {
+        else if ( x < 1 - cutoff ) { // 0.2 < x < 0.8
             return 1;
         }
-        else {
+        else { // 0.8 < x < 1.2
             return 2;
         }
     }
@@ -70,6 +61,7 @@ int getPosition( float x ) {
         return x == 1 ? subDivs - 1 : (int) x * subDivs;
     }
 }
+#endif
 
 /* fillType can be either GL_FILL or GL_LINE
  * GL_FILL fills surface with color; GL_LINE draws frame
@@ -188,6 +180,7 @@ int main() {
      * i.e. in Linux, if you have 3 ports: /dev/ttyS0, /dev/ttyS1, /dev/tty2
      * and your Arduino is on ttyS1, pass "dev/ttyS1" in.
      */
+    // FIXME: test that there is at least one serial port in the list
     SerialPort serialPort( SerialPort::getSerialPorts()[0].c_str() );
 
     float nxyz[sen];
@@ -195,8 +188,6 @@ int main() {
 
     float w = 256; // board size
     bool flip[3] = { false , true , false };
-
-    int player = 0;
 
     // Setup
     sf::Window mainWin( sf::VideoMode( 800 , 600 ) , "3D Capacitor Demo" ,
@@ -253,12 +244,6 @@ int main() {
             if ( event.type == sf::Event::Closed ) {
                 mainWin.close();
             }
-            else if ( event.type == sf::Event::KeyPressed ) {
-                if ( event.key.code == sf::Keyboard::Tab ) {
-                    moves[player][ixyz[0]][ixyz[1]][ixyz[2]] = true;
-                    player = player == 0 ? 1 : 0;
-                }
-            }
             else if ( event.type == sf::Event::MouseButtonPressed ) {
                 if ( event.mouseButton.button == sf::Mouse::Right ) {
                     resetVariables();
@@ -304,7 +289,12 @@ int main() {
                         nxyz[i] = flip[i] ? 1 - raw : raw;
                         cama[i]->update( nxyz[i] );
                         axyz[i]->update( nxyz[i] );
-                        ixyz[i] = getPosition( axyz[i]->getEstimate() );
+
+                        /* Converts normalized position estimate [0..1] to
+                         * position in array [0..2]
+                         */
+                        ixyz[i] = std::lround( axyz[i]->getEstimate() * 2.0 );
+                        //ixyz[i] = getPosition( axyz[i]->getEstimate() );
                     }
                 }
 
@@ -379,22 +369,10 @@ int main() {
 
                     glTranslatef( x * sw , y * sw , z * sw );
 
-                    if ( moves[0][x][y][z] ) {
-                        glColor4ub( 255 , 0 , 0 , 200 ); // transparent red
-                    }
-                    else if ( moves[1][x][y][z] ) {
-                        glColor4ub( 0 , 0 , 255 , 200 ); // transparent blue
-                    }
-                    else if (
-                            x == ixyz[0] &&
+                    if (    x == ixyz[0] &&
                             y == ixyz[1] &&
                             z == ixyz[2]) {
-                        if ( player == 0 ) {
-                            glColor4ub( 255 , 0 , 0 , 200 ); // transparent red
-                        }
-                        else {
-                            glColor4ub( 0 , 0 , 255 , 200 ); // transparent blue
-                        }
+                        glColor4ub( 255 , 0 , 0 , 200 ); // transparent red
                     }
                     else {
                         glColor4ub( 100 , 100 , 100 , 100 ); // transparent gray
@@ -411,7 +389,7 @@ int main() {
         mainWin.display();
 
         if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-            msg( "defining boundaries" );
+            //msg( "defining boundaries" );
         }
     }
 
