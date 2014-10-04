@@ -1,7 +1,7 @@
 //=============================================================================
 //File Name: Util.hpp
 //Description: Contains miscellaneous utility functions
-//Author: Alan Fisher and Tyler Veness
+//Author: Tyler Veness
 //=============================================================================
 
 #include <string>

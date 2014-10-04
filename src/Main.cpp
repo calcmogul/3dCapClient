@@ -9,14 +9,13 @@
 #include <cstdlib>
 #include <cmath>
 
-#define USE_GLU_SPHERE 1
-
 #include "SerialPort.hpp"
 
 #include "Normalize.hpp"
 #include "WeightedAverageFilter.hpp"
 #include "KalmanFilter.hpp"
 #include "Util.hpp"
+#include "GLUtils.hpp"
 
 #include <SFML/Window/Window.hpp>
 #include <SFML/OpenGL.hpp>
@@ -63,114 +62,6 @@ int getPosition( float x ) {
 }
 #endif
 
-/* fillType can be either GL_FILL or GL_LINE
- * GL_FILL fills surface with color; GL_LINE draws frame
- */
-void drawBox( float width , GLenum fillType ) {
-    float height = width, depth = width;
-
-    glPushMatrix();
-
-    // Add equally to x and z to move up and down in finished view
-    glTranslatef( -width / 2 , -height / 2 , depth / 2 );
-
-    if ( fillType == GL_FILL ) {
-        glBegin( GL_TRIANGLE_STRIP );
-        // Front right vertical line
-        glVertex3f( width , 0 , 0 );
-        glVertex3f( width , height , 0 );
-
-        // Rear right vertical line
-        glVertex3f( width , 0 , -depth );
-        glVertex3f( width , height , -depth );
-
-        // Rear left verical line
-        glVertex3f( 0 , 0 , -depth );
-        glVertex3f( 0 , height , -depth );
-
-        // Front left vertical line
-        glVertex3f( 0 , 0 , 0 );
-        glVertex3f( 0 , height , 0 );
-
-        // Front right vertical line
-        glVertex3f( width , 0 , 0 );
-        glVertex3f( width , height , 0 );
-        glEnd();
-    }
-    else if ( fillType == GL_LINE ) {
-        // Front face
-        glBegin( GL_LINE_STRIP );
-        glVertex3f( width , 0 , 0 );
-        glVertex3f( width , height , 0 );
-        glVertex3f( 0 , height , 0 );
-        glVertex3f( 0 , 0 , 0 );
-        glVertex3f( width , 0 , 0 );
-        glEnd();
-
-        // Right face
-        glBegin( GL_LINE_STRIP );
-        glVertex3f( width , 0 , 0 );
-        glVertex3f( width , 0 , -depth );
-        glVertex3f( width , height , -depth );
-        glVertex3f( width , height , 0 );
-        glEnd();
-
-        // Rear face
-        glBegin( GL_LINE_STRIP );
-        glVertex3f( width , 0 , -depth );
-        glVertex3f( 0 , 0 , -depth );
-        glVertex3f( 0 , height , -depth );
-        glVertex3f( width , height , -depth );
-        glEnd();
-
-        // Left face
-        glBegin( GL_LINE_STRIP );
-        glVertex3f( 0 , 0 , -depth );
-        glVertex3f( 0 , 0 , 0 );
-        glVertex3f( 0 , height , 0 );
-        glVertex3f( 0 , height , -depth );
-        glEnd();
-    }
-
-    glPopMatrix();
-}
-
-#if !USE_GLU_SPHERE
-void drawSphere( float radius , float slices , float stacks ) {
-    glBegin( GL_TRIANGLE_STRIP );
-
-    for ( float phi = 0.f ; phi < 180.f ; phi += 180.f / stacks ) {
-        for ( float theta = 0.f ; theta < 360.f ; theta += 360.f / slices ) {
-            glVertex3f(
-                    radius * sin( phi * M_PI / 180.f ) * cos( theta * M_PI / 180.f ) ,
-                    radius * sin( phi * M_PI / 180.f ) * sin( theta * M_PI / 180.f ) ,
-                    radius * cos( phi * M_PI / 180.f )
-            );
-
-            glVertex3f(
-                    radius * sin( (phi + 180.f / stacks) * M_PI / 180.f ) * cos( theta * M_PI / 180.f ) ,
-                    radius * sin( (phi + 180.f / stacks) * M_PI / 180.f ) * sin( theta * M_PI / 180.f ) ,
-                    radius * cos( (phi + 180.f / stacks) * M_PI / 180.f )
-            );
-        }
-
-        glVertex3f(
-                radius * sin( phi * M_PI / 180.f ) ,
-                0.f ,
-                radius * cos( phi * M_PI / 180.f )
-        );
-
-        glVertex3f(
-                radius * sin( (phi + 180.f / stacks) * M_PI / 180.f ) ,
-                0.f ,
-                radius * cos( (phi + 180.f / stacks) * M_PI / 180.f )
-        );
-    }
-
-    glEnd();
-}
-#endif
-
 int main() {
     /* The argument to open_port should be the serial port of your Arduino.
      *
@@ -202,6 +93,7 @@ int main() {
     glDepthFunc( GL_LESS );
     glDepthMask( GL_TRUE );
     glEnable( GL_DEPTH_TEST );
+    glDepthFunc( GL_LESS );
     glEnable( GL_BLEND );
     glEnable( GL_ALPHA_TEST );
     glDisable( GL_TEXTURE_2D );
@@ -348,17 +240,14 @@ int main() {
           axyz[1]->getEstimate() * sd,
           axyz[2]->getEstimate() * sd);
 
+        // Draw sphere for current position of hand
         glColor4ub( 255 , 160 , 0 , 200 );
-#if !USE_GLU_SPHERE
-        drawSphere( 18 , 32 , 32 );
-#else
         GLUquadricObj* sphere = gluNewQuadric();
         if ( sphere != NULL ) {
             gluQuadricNormals( sphere , GLU_SMOOTH );
             gluSphere( sphere , 18 , 32 , 32 );
             gluDeleteQuadric( sphere );
         }
-#endif
 
         glPopMatrix();
 
