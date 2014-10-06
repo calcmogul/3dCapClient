@@ -14,8 +14,6 @@ KalmanFilter::KalmanFilter( double Q , double R ) :
 }
 
 void KalmanFilter::update( double input ) {
-    m_dataMutex.lock();
-
     // Get the current dt since the last call to update()
     m_dt = m_time.getElapsedTime().asSeconds();
 
@@ -50,44 +48,24 @@ void KalmanFilter::update( double input ) {
 
     // Update the previous time for the next delta
     m_time.restart();
-
-    m_dataMutex.unlock();
 }
 
 void KalmanFilter::setQ( double Q ) {
-    m_dataMutex.lock();
-
     m_Q = Q;
-
-    m_dataMutex.unlock();
 }
 
 void KalmanFilter::setR( double R ) {
-    m_dataMutex.lock();
-
     m_R = R;
-
-    m_dataMutex.unlock();
 }
 
 double KalmanFilter::getEstimate() {
-    m_dataMutex.lock();
-
-    double sXHat = m_xHat;
-
-    m_dataMutex.unlock();
-
-    return sXHat;
+    return m_xHat;
 }
 
 void KalmanFilter::reset() {
-    m_dataMutex.lock();
-
     m_xHat = 0.0;
     m_P = 0.0;
     m_dt = 0.0;
     m_time.restart();
     m_firstRun = true;
-
-    m_dataMutex.unlock();
 }

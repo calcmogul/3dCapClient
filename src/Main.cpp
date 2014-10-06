@@ -6,6 +6,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <cstdlib>
 #include <cmath>
 
@@ -28,17 +29,18 @@
 void msg( std::string msg );
 
 const unsigned int sen = 3; // sensors
-const unsigned int subDivs = 3; // board sub-subDivsisions
+const unsigned int subDivs = 3; // board sub-divisions
 
-Normalize n[sen];
-WeightedAverageFilter* cama[sen];
-KalmanFilter* axyz[sen];
+// x (left plate), y (bottom plate), z (right plate)
+std::vector<Normalize> n( sen );
+std::vector<WeightedAverageFilter> cama( sen , WeightedAverageFilter(0.04) );
+std::vector<KalmanFilter> axyz( sen , KalmanFilter(0.00006 , 0.0001) );
 
 void resetVariables() {
     for( unsigned int i = 0 ; i < sen ; i++ ) {
         n[i].reset();
-        cama[i]->reset();
-        axyz[i]->reset();
+        cama[i].reset();
+        axyz[i].reset();
     }
 }
 
@@ -80,20 +82,22 @@ int main() {
     float w = 256; // board size
     bool flip[3] = { false , true , false };
 
+    sf::ContextSettings settings;
+    settings.depthBits = 32;
+
     // Setup
     sf::Window mainWin( sf::VideoMode( 800 , 600 ) , "3D Capacitor Demo" ,
-            sf::Style::Titlebar | sf::Style::Close );
+            sf::Style::Titlebar | sf::Style::Close , settings );
     mainWin.setFramerateLimit( 25 );
 
     /* ===== Initialize OpenGL ===== */
     glClearColor( 1.f , 1.f , 1.f , 1.f );
-    glClearDepth( 0.f );
+    glClearDepth( 1.f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
     glDepthFunc( GL_LESS );
     glDepthMask( GL_TRUE );
     glEnable( GL_DEPTH_TEST );
-    glDepthFunc( GL_LESS );
     glEnable( GL_BLEND );
     glEnable( GL_ALPHA_TEST );
     glDisable( GL_TEXTURE_2D );
@@ -101,27 +105,16 @@ int main() {
     glShadeModel( GL_FLAT );
 
     // Set up screen
-    glViewport( 0 , 0 , 800 , 600 );
+    glViewport( 0 , 0 , mainWin.getSize().x , mainWin.getSize().y );
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
-    glOrtho( -400 , 400 , -300 , 300 , -1000.f , 1000.f );
+    gluPerspective( 60.f ,
+            static_cast<float>(mainWin.getSize().x) / mainWin.getSize().y ,
+            250.f ,
+            900.f );
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity();
     /* ============================= */
-
-    for ( unsigned int i = 0 ; i < sen ; i++ ) {
-        cama[i] = new WeightedAverageFilter( 0.04 );
-
-        if ( i == 0 ) {
-            axyz[i] = new KalmanFilter( 0.00006 , 0.0001 ); // x (left plate)
-        }
-        else if ( i == 1 ) {
-            axyz[i] = new KalmanFilter( 0.00006 , 0.0001 ); // y (bottom plate)
-        }
-        else if ( i == 2 ) {
-            axyz[i] = new KalmanFilter( 0.00006 , 0.0001 ); // z (right plate)
-        }
-    }
 
     resetVariables();
 
@@ -179,14 +172,13 @@ int main() {
                         float raw = n[i].linearize( xyz[i] );
 
                         nxyz[i] = flip[i] ? 1 - raw : raw;
-                        cama[i]->update( nxyz[i] );
-                        axyz[i]->update( nxyz[i] );
+                        cama[i].update( nxyz[i] );
+                        axyz[i].update( nxyz[i] );
 
                         /* Converts normalized position estimate [0..1] to
-                         * position in array [0..2]
+                         * position in array [0..subDivs-1]
                          */
-                        ixyz[i] = std::lround( axyz[i]->getEstimate() * 2.0 );
-                        //ixyz[i] = getPosition( axyz[i]->getEstimate() );
+                        ixyz[i] = std::lround( axyz[i].getEstimate() * (subDivs - 1) );
                     }
                 }
 
@@ -205,17 +197,22 @@ int main() {
 
         glPushMatrix();
 
-        /* The sensor's coordinate axes are oriented differently from OpenGL's
-         * axes, so rotate the view until they match.
-         */
-        glRotatef( 180.f , 1.f , 0.f , 0.f );
-
         gluLookAt(
-          w / 2 + (cama[0]->getEstimate() - cama[2]->getEstimate()) * w / 2,
-          w / 2 + (cama[1]->getEstimate() - 1) * 600 / 2,
+          w / 2 + (cama[0].getEstimate() - cama[2].getEstimate()) * w / 2,
+          (w * 3 + (cama[1].getEstimate() - 1) * mainWin.getSize().y / 2),
           w * 2,
           w / 2, w / 2, w / 2,
           0, 1, 0);
+
+        /* The sensor's coordinate axes are oriented differently from OpenGL's
+         * axes, so rotate the view until they match. glTranslatef() is used to
+         * make rotation occur around center of cube. This translation is
+         * undone manually since pushing and popping a matrix would undo the
+         * rotation as well.
+         */
+        glTranslatef( w / 2 , w / 2 , w / 2 );
+        glRotatef( 180.f , 1.f , 0.f , 0.f );
+        glTranslatef( -w / 2 , -w / 2, -w / 2 );
 
         glPushMatrix();
 
@@ -227,18 +224,24 @@ int main() {
 
         glPopMatrix();
 
-        float sw = w / subDivs;
+        float subDivWidth = w / subDivs;
 
-        glTranslatef( w / 2 , sw / 2 , 0 );
+        glTranslatef( w / 2 , subDivWidth / 2 , 0 );
         glRotatef( -45.f , 0.f , 1.f , 0.f );
 
         glPushMatrix();
-        float sd = sw * (subDivs - 1);
+
+        /* Converts normalized average to position within cube
+         *   axyz * (subDivs - 1) * (w / subDivs)
+         * = axyz * (w - w / subDivs)
+         * = axyz * ( w - subDivWidth)
+         */
+        float posModifier = w - subDivWidth;
 
         glTranslatef(
-          axyz[0]->getEstimate() * sd,
-          axyz[1]->getEstimate() * sd,
-          axyz[2]->getEstimate() * sd);
+          axyz[0].getEstimate() * posModifier,
+          axyz[1].getEstimate() * posModifier,
+          axyz[2].getEstimate() * posModifier);
 
         // Draw sphere for current position of hand
         glColor4ub( 255 , 160 , 0 , 200 );
@@ -256,7 +259,7 @@ int main() {
                 for ( unsigned int x = 0 ; x < subDivs ; x++ ) {
                     glPushMatrix();
 
-                    glTranslatef( x * sw , y * sw , z * sw );
+                    glTranslatef( x * subDivWidth , y * subDivWidth , z * subDivWidth );
 
                     if (    x == ixyz[0] &&
                             y == ixyz[1] &&
@@ -266,7 +269,7 @@ int main() {
                     else {
                         glColor4ub( 100 , 100 , 100 , 100 ); // transparent gray
                     }
-                    drawBox( sw / 3 , GL_FILL );
+                    drawBox( subDivWidth / 3 , GL_FILL );
 
                     glPopMatrix();
                 }
@@ -280,11 +283,6 @@ int main() {
         if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
             //msg( "defining boundaries" );
         }
-    }
-
-    for ( unsigned int i = 0 ; i < sen ; i++ ) {
-        delete cama[i];
-        delete axyz[i];
     }
 
     return 0;

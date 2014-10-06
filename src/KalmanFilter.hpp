@@ -7,7 +7,6 @@
 #ifndef KALMAN_FILTER_HPP
 #define KALMAN_FILTER_HPP
 
-#include <SFML/System/Mutex.hpp>
 #include <SFML/System/Clock.hpp>
 
 class KalmanFilter {
@@ -25,9 +24,6 @@ public:
     void reset();
 
 private:
-    // Used for getting and setting variables between main and sampling thread
-    sf::Mutex m_dataMutex;
-
     // Running estimate of state calculated by filter
     double m_xHat;
 
