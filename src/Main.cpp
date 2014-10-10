@@ -23,11 +23,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-#include <GL/gl.h>
-#include <GL/glu.h>
-
-void msg( std::string msg );
-
 const unsigned int sen = 3; // sensors
 const unsigned int subDivs = 3; // board sub-divisions
 
@@ -35,14 +30,6 @@ const unsigned int subDivs = 3; // board sub-divisions
 std::vector<Normalize> n( sen );
 std::vector<WeightedAverageFilter> cama( sen , WeightedAverageFilter(0.04) );
 std::vector<KalmanFilter> axyz( sen , KalmanFilter(0.00006 , 0.0001) );
-
-void resetVariables() {
-    for( unsigned int i = 0 ; i < sen ; i++ ) {
-        n[i].reset();
-        cama[i].reset();
-        axyz[i].reset();
-    }
-}
 
 #if 0
 float cutoff = 0.2;
@@ -129,8 +116,6 @@ int main() {
     glLoadIdentity();
     /* ============================= */
 
-    resetVariables();
-
     // Used to store data read from serialPort port
     std::string serialPortData;
     char curChar = '\0';
@@ -144,7 +129,12 @@ int main() {
             }
             else if ( event.type == sf::Event::MouseButtonPressed ) {
                 if ( event.mouseButton.button == sf::Mouse::Right ) {
-                    resetVariables();
+                    // Reset filters
+                    for( unsigned int i = 0 ; i < sen ; i++ ) {
+                        n[i].reset();
+                        cama[i].reset();
+                        axyz[i].reset();
+                    }
                 }
             }
         }
@@ -184,7 +174,12 @@ int main() {
                     for ( unsigned int i = 0 ; i < sen ; i++ ) {
                         float raw = n[i].linearize( xyz[i] );
 
-                        nxyz[i] = flip[i] ? 1 - raw : raw;
+                        if ( flip[i] ) {
+                            nxyz[i] = 1 - raw;
+                        }
+                        else {
+                            nxyz[i] = raw;
+                        }
                         cama[i].update( nxyz[i] );
                         axyz[i].update( nxyz[i] );
 
@@ -294,13 +289,9 @@ int main() {
         mainWin.display();
 
         if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-            //msg( "defining boundaries" );
+            std::cout << "defining boundaries\n";
         }
     }
 
     return 0;
-}
-
-void msg( std::string msg ) {
-    std::cout << msg << '\n';
 }
