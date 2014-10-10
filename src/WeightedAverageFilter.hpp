@@ -8,27 +8,18 @@
 #ifndef WEIGHTED_AVERAGE_FILTER_HPP
 #define WEIGHTED_AVERAGE_FILTER_HPP
 
-#include <SFML/System/Clock.hpp>
+#include "FilterBase.hpp"
 
-class WeightedAverageFilter {
+// m_stateEstimate == the average state
+
+class WeightedAverageFilter : public FilterBase {
 public:
     WeightedAverageFilter( float adapt );
 
-    void update( float input );
-    void reset();
-
-    // Return the filtered value
-    float getEstimate();
+    void update( double input );
 
 private:
     float m_adapt;
-    float m_avg;
-
-    // Holds dt in update()
-    double m_dt;
-
-    // Used to find dt in update()
-    sf::Clock m_time;
 };
 
 #endif // WEIGHTED_AVERAGE_FILTER_HPP

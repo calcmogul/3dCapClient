@@ -7,9 +7,11 @@
 #ifndef KALMAN_FILTER_HPP
 #define KALMAN_FILTER_HPP
 
-#include <SFML/System/Clock.hpp>
+#include "FilterBase.hpp"
 
-class KalmanFilter {
+// m_stateEstimate == xHat, the running estimate of state calculated by filter
+
+class KalmanFilter : public FilterBase {
 public:
     KalmanFilter( double Q , double R );
 
@@ -18,15 +20,9 @@ public:
     void setQ( double Q );
     void setR( double R );
 
-    // Return the filtered value
-    double getEstimate();
-
     void reset();
 
 private:
-    // Running estimate of state calculated by filter
-    double m_xHat;
-
     // Covariance of error
     double m_P;
 
@@ -35,12 +31,6 @@ private:
 
     // Measurement noise variance
     double m_R;
-
-    // Holds dt in update()
-    double m_dt;
-
-    // Used to find dt in update()
-    sf::Clock m_time;
 
     // If true, update() sets current estimate to first measurement
     bool m_firstRun;

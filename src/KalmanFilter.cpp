@@ -19,7 +19,7 @@ void KalmanFilter::update( double input ) {
 
     // Initialize estimate to measured value
     if ( m_firstRun ) {
-        m_xHat = input;
+        m_stateEstimate = input;
 
         m_firstRun = false;
     }
@@ -34,16 +34,16 @@ void KalmanFilter::update( double input ) {
 
     /* Update estimate with measurement zk (z_measured)
      *   'input' is zk in this equation
-     *   (input - m_xHat) is y, the innovation
+     *   (input - m_stateEstimate) is y, the innovation
      */
-    m_xHat += K * (input - m_xHat);
+    m_stateEstimate += K * (input - m_stateEstimate);
 
     // Correct error covariance
     m_P -= K * m_P;
 
     // Test for NaN (all comparisons with NaN will be false)
-    if ( ( !(m_xHat > 0.0) ) && ( !(m_xHat < 0.0) ) ) {
-        m_xHat = 0.0;
+    if ( ( !(m_stateEstimate > 0.0) ) && ( !(m_stateEstimate < 0.0) ) ) {
+        m_stateEstimate = 0.0;
     }
 
     // Update the previous time for the next delta
@@ -58,14 +58,9 @@ void KalmanFilter::setR( double R ) {
     m_R = R;
 }
 
-double KalmanFilter::getEstimate() {
-    return m_xHat;
-}
-
 void KalmanFilter::reset() {
-    m_xHat = 0.0;
     m_P = 0.0;
-    m_dt = 0.0;
-    m_time.restart();
     m_firstRun = true;
+
+    FilterBase::reset();
 }
