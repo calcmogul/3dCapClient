@@ -68,28 +68,36 @@ int main() {
             sf::Style::Titlebar | sf::Style::Close , settings );
     mainWin.setFramerateLimit( 25 );
 
-    /* ===== Initialize OpenGL ===== */
+    // Set buffer clear values
     glClearColor( 1.f , 1.f , 1.f , 1.f );
     glClearDepth( 1.f );
     glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
 
+    // Enable depth buffering
     glDepthFunc( GL_LESS );
     glDepthMask( GL_TRUE );
     glEnable( GL_DEPTH_TEST );
+
+    // Enable alpha blending
     glEnable( GL_BLEND );
     glEnable( GL_ALPHA_TEST );
-    glDisable( GL_TEXTURE_2D );
     glBlendFunc( GL_SRC_ALPHA , GL_ONE_MINUS_SRC_ALPHA );
 
+    // Disable textures since they are unneeded
+    glDisable( GL_TEXTURE_2D );
+
+    // Declare lighting parameters
     GLfloat mat_specular[] = { 1.0 , 1.0 , 1.0 , 1.0 };
     GLfloat mat_shininess[] = { 50.0 };
     GLfloat light_position[] = { 1.0 , 1.0 , 1.0 , 0.0 };
-    glShadeModel( GL_SMOOTH );
 
+    // Set lighting parameters
+    glShadeModel( GL_SMOOTH );
     glMaterialfv( GL_FRONT , GL_SPECULAR , mat_specular );
     glMaterialfv( GL_FRONT , GL_SHININESS , mat_shininess );
     glLightfv( GL_LIGHT0 , GL_POSITION , light_position );
 
+    // Enable lighting
     glEnable( GL_LIGHTING );
     glEnable( GL_LIGHT0 );
     glEnable( GL_COLOR_MATERIAL );
@@ -105,7 +113,6 @@ int main() {
             900.f );
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity();
-    /* ============================= */
 
     // Used to store data read from serialPort port
     std::string serialPortData;
@@ -137,7 +144,7 @@ int main() {
                 serialPortData += curChar;
             }
 
-            if ( numRead == 0 || (numRead == -1 && errno != EAGAIN) ) {
+            if ( numRead == -1 ) {
                 // EOF has been reached (socket disconnected)
                 serialPort.disconnect();
             }

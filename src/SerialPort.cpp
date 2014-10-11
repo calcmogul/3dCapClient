@@ -155,9 +155,12 @@ int SerialPort::read( char* buffer , unsigned int nbChar ) {
 #ifdef _WIN32
     // Number of bytes we'll have read
     DWORD bytesRead;
-    // Number of bytes we'll really ask to read
-    unsigned int toRead;
+#else
+    // Number of bytes we'll have read
+    int bytesRead;
+#endif
 
+#ifdef _WIN32
     // Use the ClearCommError function to get status info on the SerialPort port
     ClearCommError( hSerial , &m_errors , &m_status );
 
@@ -167,6 +170,8 @@ int SerialPort::read( char* buffer , unsigned int nbChar ) {
          * number of characters, if not we'll read only the available
          * characters to prevent locking of the application.
          */
+        // Number of bytes that will actually be read
+        unsigned int toRead;
         if( m_status.cbInQue > nbChar ) {
             toRead = nbChar;
         }
@@ -180,6 +185,9 @@ int SerialPort::read( char* buffer , unsigned int nbChar ) {
         if ( ReadFile( hSerial , buffer , toRead , &bytesRead , NULL ) ) {
             return bytesRead;
         }
+        else if ( GetLastError() != ERROR_IO_PENDING ) {
+            return -1;
+        }
         else {
             buffer[0] = '\0';
             return 0;
@@ -190,7 +198,14 @@ int SerialPort::read( char* buffer , unsigned int nbChar ) {
         return 0;
     }
 #else
-    return ::read( m_fd , buffer , nbChar );
+    bytesRead = ::read( m_fd , buffer , nbChar );
+
+    if ( bytesRead == 0 || (bytesRead == -1 && errno != EAGAIN) ) {
+        return -1;
+    }
+    else {
+        return bytesRead;
+    }
 #endif
 }
 
