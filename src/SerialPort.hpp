@@ -18,7 +18,7 @@
 class SerialPort {
 public:
     // Initialize SerialPort communication with the given COM port
-    SerialPort( const char* portName );
+    SerialPort( std::string portName = "" );
 
     /* Close the connection
      * NOTE: for some reason you can't connect again before exiting the program
@@ -30,7 +30,7 @@ public:
      * passed as an argument, the previously assigned name will be used. This
      * should be done in the case of a reconnection attempt.
      */
-    void connect( const char* portName = NULL );
+    void connect( std::string portName = "" );
 
     /* Close the connection
      * NOTE: for some reason you can't connect again before exiting the program

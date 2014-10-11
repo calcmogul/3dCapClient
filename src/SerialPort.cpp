@@ -19,30 +19,35 @@
 
 const unsigned int SerialPort::m_waitTime = 2000;
 
-SerialPort::SerialPort( const char* portName ) {
+SerialPort::SerialPort( std::string portName ) {
+    m_portName = portName;
+
     // We're not yet connected
     m_connected = false;
-
-    connect( portName );
 }
 
 SerialPort::~SerialPort() {
     disconnect();
 }
 
-void SerialPort::connect( const char* portName ) {
+void SerialPort::connect( std::string portName ) {
     // Disconnect before reconnecting or connecting to a different serial port
     if ( m_connected ) {
         disconnect();
     }
 
-    if ( portName != NULL ) {
+    // Update name if necessary
+    if ( portName != "" ) {
         m_portName = portName;
+    }
+    // If no stored name, don't attempt a connection
+    else if ( m_portName == "" ) {
+        return;
     }
 
     // Try to connect to the given port
 #ifdef _WIN32
-    hSerial = CreateFile( portName ,
+    hSerial = CreateFile( portName.c_str() ,
             GENERIC_READ | GENERIC_WRITE ,
             0 ,
             NULL ,
@@ -50,7 +55,7 @@ void SerialPort::connect( const char* portName ) {
             FILE_ATTRIBUTE_NORMAL ,
             NULL );
 #else
-    m_fd = open( portName , O_RDONLY | O_NOCTTY | O_NDELAY );
+    m_fd = open( portName.c_str() , O_RDONLY | O_NOCTTY | O_NDELAY );
 #endif
 
     // Check if connection was successful

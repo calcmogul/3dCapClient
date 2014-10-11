@@ -52,16 +52,7 @@ int getPosition( float x ) {
 #endif
 
 int main() {
-    /* The argument to open_port should be the serial port of your Arduino.
-     *
-     * i.e. in Windows, if you have 3 ports: COM1, COM2, COM3 and your Arduino
-     * is on COM2, pass "COM2" in.
-     *
-     * i.e. in Linux, if you have 3 ports: /dev/ttyS0, /dev/ttyS1, /dev/tty2
-     * and your Arduino is on ttyS1, pass "dev/ttyS1" in.
-     */
-    // FIXME: test that there is at least one serial port in the list
-    SerialPort serialPort( SerialPort::getSerialPorts()[0].c_str() );
+    SerialPort serialPort;
 
     float nxyz[sen];
     unsigned int ixyz[sen];
@@ -197,7 +188,10 @@ int main() {
             }
         }
         else {
-            serialPort.connect( SerialPort::getSerialPorts()[0].c_str() );
+            std::vector<std::string>&& ports = SerialPort::getSerialPorts();
+            if ( ports.size() > 0 ) {
+                serialPort.connect( ports[0] );
+            }
         }
 
         // Clear the buffers
