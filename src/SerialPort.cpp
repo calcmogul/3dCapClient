@@ -128,6 +128,7 @@ void SerialPort::connect( std::string portName ) {
 
     m_connected = true;
 
+#if 0
     // We wait as the Arduino board will be reseting
 #ifdef _WIN32
     Sleep( m_waitTime );
@@ -135,7 +136,8 @@ void SerialPort::connect( std::string portName ) {
     struct timespec sleepTime;
     sleepTime.tv_sec = m_waitTime / 1000;
     sleepTime.tv_nsec = (m_waitTime % 1000) * 1000000;
-    //nanosleep( &sleepTime , NULL );
+    nanosleep( &sleepTime , NULL );
+#endif
 #endif
 }
 
