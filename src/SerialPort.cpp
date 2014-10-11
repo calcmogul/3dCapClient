@@ -211,10 +211,14 @@ int SerialPort::read( char* buffer , unsigned int nbChar ) {
 
 bool SerialPort::write( char* buffer , unsigned int nbChar ) {
 #ifdef _WIN32
-    DWORD bytesSend;
+    DWORD bytesSent = 0;
+#else
+    int bytesSent = 0;
+#endif
 
+#ifdef _WIN32
     // Try to write the buffer on the serial port
-    if( !WriteFile( hSerial , static_cast<void*>(buffer) , nbChar , &bytesSend , 0 ) ) {
+    if( !WriteFile( hSerial , static_cast<void*>(buffer) , nbChar , &bytesSent , 0 ) ) {
         // Write failed, so retrieve comm error
         ClearCommError( hSerial , &m_errors , &m_status );
 
@@ -224,8 +228,20 @@ bool SerialPort::write( char* buffer , unsigned int nbChar ) {
         return true;
     }
 #else
-    // Not implemented
-    return false;
+    unsigned int pos = 0;
+
+    while ( pos < nbChar ) {
+        bytesSent = ::write( m_fd , &buffer[pos] , nbChar );
+
+        if ( bytesSent > 0 ) {
+            pos += bytesSent;
+        }
+        else if ( bytesSent == -1 && errno != EAGAIN ) {
+            return false;
+        }
+    }
+
+    return true;
 #endif
 }
 
