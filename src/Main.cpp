@@ -62,6 +62,10 @@ int main() {
 
     sf::ContextSettings settings;
     settings.depthBits = 32;
+    settings.stencilBits = 0;
+    settings.antialiasingLevel = 4;
+    settings.majorVersion = 3;
+    settings.minorVersion = 0;
 
     // Setup
     sf::Window mainWin( sf::VideoMode( 800 , 600 ) , "3D Capacitor Demo" ,
