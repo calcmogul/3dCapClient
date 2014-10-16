@@ -19,7 +19,6 @@ public:
 
     float normalize( float value );
     float linearize( float value );
-    float choose( float value );
     void reset();
 
 private:
