@@ -54,11 +54,10 @@ int getPosition( float x ) {
 int main() {
     SerialPort serialPort;
 
-    float nxyz[sen];
     unsigned int ixyz[sen];
 
     float w = 256; // board size
-    bool flip[3] = { false , true , false };
+    bool flip[sen] = { false , true , false };
 
     sf::ContextSettings settings;
     settings.depthBits = 32;
@@ -157,33 +156,29 @@ int main() {
                 std::cout << "\"" << serialPortData << "\"\n";
 
                 std::vector<std::string> parts = split( serialPortData , " " );
+
                 if ( parts.size() == sen ) {
-                    float xyz[3];
+                    float xyz[sen];
+                    float raw;
+
                     for ( unsigned int i = 0 ; i < sen ; i++ ) {
                         xyz[i] = std::atof( parts[i].c_str() );
-                    }
 
-                    if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-                        for( unsigned int i = 0 ; i < sen ; i++ ) {
+                        if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
                             n[i].expandRange( xyz[i] );
                         }
-                    }
 
-                    for ( unsigned int i = 0 ; i < sen ; i++ ) {
-                        nxyz[i] = 0.f;
-                    }
+                        raw = n[i].linearize( xyz[i] );
 
-                    for ( unsigned int i = 0 ; i < sen ; i++ ) {
-                        float raw = n[i].linearize( xyz[i] );
-
+                        // Update camera and position filters
                         if ( flip[i] ) {
-                            nxyz[i] = 1 - raw;
+                            cama[i].update( 1 - raw );
+                            axyz[i].update( 1 - raw );
                         }
                         else {
-                            nxyz[i] = raw;
+                            cama[i].update( raw );
+                            axyz[i].update( raw );
                         }
-                        cama[i].update( nxyz[i] );
-                        axyz[i].update( nxyz[i] );
 
                         /* Converts normalized position estimate [0..1] to
                          * position in array [0..subDivs-1]
