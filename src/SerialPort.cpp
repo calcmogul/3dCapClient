@@ -276,7 +276,7 @@ std::vector<std::string> SerialPort::getSerialPorts() {
             if ( dir->d_type == DT_CHR &&
                     (std::strncmp( dir->d_name , "ttyS" , sizeof("ttyS") - 1 ) == 0 ||
                      std::strncmp( dir->d_name , "ttyACM" , sizeof("ttyACM") - 1 ) == 0) ) {
-                std::cout << dir->d_name << '\n';
+                //std::cout << dir->d_name << '\n';
                 std::string tmp = "/dev/";
                 tmp += dir->d_name;
                 ports.push_back( tmp );
