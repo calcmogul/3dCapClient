@@ -23,21 +23,11 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-const unsigned int sen = 3; // sensors
-const unsigned int subDivs = 3; // board sub-divisions
-
-// x (left plate), y (bottom plate), z (right plate)
-std::vector<Normalize> n( sen );
-std::vector<WeightedAverageFilter> cama( sen , WeightedAverageFilter(0.04) );
-std::vector<KalmanFilter> axyz( sen , KalmanFilter(0.00006 , 0.0001) );
-
 enum SerialStatus {
     validData = 0 ,
     connected = 1 ,
     disconnected = 2
 };
-
-SerialStatus status = SerialStatus::disconnected;
 
 #if 0
 float cutoff = 0.2;
@@ -60,6 +50,16 @@ int getPosition( float x ) {
 #endif
 
 int main() {
+    const unsigned int sen = 3; // sensors
+    const unsigned int subDivs = 3; // board sub-divisions
+
+    // x (left plate), y (bottom plate), z (right plate)
+    std::vector<Normalize> n( sen );
+    std::vector<WeightedAverageFilter> cama( sen , WeightedAverageFilter(0.04) );
+    std::vector<KalmanFilter> axyz( sen , KalmanFilter(0.00006 , 0.0001) );
+
+    SerialStatus status = SerialStatus::disconnected;
+
     SerialPort serialPort;
 
     unsigned int ixyz[sen];
