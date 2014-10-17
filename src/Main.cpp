@@ -23,12 +23,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-enum SerialStatus {
-    validData = 0 ,
-    connected = 1 ,
-    disconnected = 2
-};
-
 int main() {
     const unsigned int sen = 3; // sensors
     const unsigned int subDivs = 3; // board sub-divisions
@@ -38,7 +32,8 @@ int main() {
     std::vector<WeightedAverageFilter> cama( sen , WeightedAverageFilter(0.04) );
     std::vector<KalmanFilter> axyz( sen , KalmanFilter(0.00006 , 0.0001) );
 
-    SerialStatus status = SerialStatus::disconnected;
+    bool haveValidData = false;
+    bool calibrate = false;
 
     SerialPort serialPort;
 
@@ -117,7 +112,10 @@ int main() {
                 mainWin.close();
             }
             else if ( event.type == sf::Event::MouseButtonPressed ) {
-                if ( event.mouseButton.button == sf::Mouse::Right ) {
+                if ( event.mouseButton.button == sf::Mouse::Left ) {
+                    calibrate = true;
+                }
+                else if ( event.mouseButton.button == sf::Mouse::Right ) {
                     // Reset filters
                     for( unsigned int i = 0 ; i < sen ; i++ ) {
                         n[i].reset();
@@ -126,12 +124,23 @@ int main() {
                     }
                 }
             }
+            else if ( event.type == sf::Event::MouseButtonReleased ) {
+                if ( event.mouseButton.button == sf::Mouse::Left ) {
+                    calibrate = false;
+                }
+            }
+        }
+
+        // Attempt a connection
+        if ( !serialPort.isConnected() ) {
+            std::vector<std::string>&& ports = SerialPort::getSerialPorts();
+            if ( ports.size() > 0 ) {
+                serialPort.connect( ports[0] );
+            }
         }
 
         // Read line of serialPort data
         if ( serialPort.isConnected() ) {
-            status = SerialStatus::connected;
-
             while ( (numRead = serialPort.read( &curChar , 1 )) > 0 && curChar != '\n' &&
                     curChar != '\0' ) {
                 serialPortData += curChar;
@@ -140,7 +149,6 @@ int main() {
             if ( numRead == -1 ) {
                 // EOF has been reached (socket disconnected)
                 serialPort.disconnect();
-                status = SerialStatus::disconnected;
             }
             // If curChar == '\n', there is a new line of complete data
             else if ( curChar == '\n' && serialPortData.length() != 0 ) {
@@ -152,13 +160,14 @@ int main() {
                     float xyz[sen];
                     float raw;
 
-                    status = SerialStatus::validData;
+                    haveValidData = true;
 
                     for ( unsigned int i = 0 ; i < sen ; i++ ) {
                         xyz[i] = std::atof( parts[i].c_str() );
 
-                        if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
+                        if ( calibrate ) {
                             n[i].expandRange( xyz[i] );
+                            std::cout << "defining boundaries\n";
                         }
 
                         raw = n[i].linearize( xyz[i] );
@@ -179,17 +188,14 @@ int main() {
                         ixyz[i] = std::lround( axyz[i].getEstimate() * (subDivs - 1) );
                     }
                 }
+                else {
+                    haveValidData = false;
+                }
 
                 // Reset serial data storage in preparation for new line of data
                 serialPortData.clear();
                 curChar = '\0';
                 numRead = 0;
-            }
-        }
-        else {
-            std::vector<std::string>&& ports = SerialPort::getSerialPorts();
-            if ( ports.size() > 0 ) {
-                serialPort.connect( ports[0] );
             }
         }
 
@@ -211,19 +217,19 @@ int main() {
                 -36.f + static_cast<int>(mainWin.getSize().y) / 2.f ,
                 0.f );
 
-        switch ( status ) {
-        case SerialStatus::validData: {
-            glColor3ub( 0 , 200 , 0 );
-            break;
+        if ( serialPort.isConnected() ) {
+            if ( haveValidData ) {
+                // Connected and valid data
+                glColor3ub( 0 , 200 , 0 );
+            }
+            else {
+                // Connected but no valid data
+                glColor3ub( 255 , 220 , 0 );
+            }
         }
-        case SerialStatus::connected: {
-            glColor3ub( 255 , 220 , 0 );
-            break;
-        }
-        case SerialStatus::disconnected: {
+        else {
+            // Disconnected
             glColor3ub( 200 , 0 , 0 );
-            break;
-        }
         }
 
         //glShadeModel( GL_FLAT );
@@ -301,10 +307,12 @@ int main() {
                     if (    x == ixyz[0] &&
                             y == ixyz[1] &&
                             z == ixyz[2]) {
-                        glColor4ub( 255 , 0 , 0 , 200 ); // transparent red
+                        // transparent red
+                        glColor4ub( 255 , 0 , 0 , 200 );
                     }
                     else {
-                        glColor4ub( 100 , 100 , 100 , 100 ); // transparent gray
+                        // transparent gray
+                        glColor4ub( 100 , 100 , 100 , 100 );
                     }
                     drawBox( subDivWidth / 3 , GL_FILL );
 
@@ -316,10 +324,6 @@ int main() {
         glPopMatrix();
 
         mainWin.display();
-
-        if ( sf::Mouse::isButtonPressed( sf::Mouse::Left ) ) {
-            std::cout << "defining boundaries\n";
-        }
     }
 
     return 0;
