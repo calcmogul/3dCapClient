@@ -29,26 +29,6 @@ enum SerialStatus {
     disconnected = 2
 };
 
-#if 0
-float cutoff = 0.2;
-int getPosition( float x ) {
-    if ( subDivs == 3 ) {
-        if ( x < cutoff ) { // 0 < x < 0.2
-            return 0;
-        }
-        else if ( x < 1 - cutoff ) { // 0.2 < x < 0.8
-            return 1;
-        }
-        else { // 0.8 < x < 1.2
-            return 2;
-        }
-    }
-    else {
-        return x == 1 ? subDivs - 1 : (int) x * subDivs;
-    }
-}
-#endif
-
 int main() {
     const unsigned int sen = 3; // sensors
     const unsigned int subDivs = 3; // board sub-divisions
