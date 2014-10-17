@@ -111,22 +111,24 @@ int main() {
             if ( event.type == sf::Event::Closed ) {
                 mainWin.close();
             }
-            else if ( event.type == sf::Event::MouseButtonPressed ) {
-                if ( event.mouseButton.button == sf::Mouse::Left ) {
+            else if ( event.type == sf::Event::KeyPressed ) {
+                if ( event.key.code == sf::Keyboard::Space ) {
                     calibrate = true;
                 }
-                else if ( event.mouseButton.button == sf::Mouse::Right ) {
+            }
+            else if ( event.type == sf::Event::KeyReleased ) {
+                if ( event.key.code == sf::Keyboard::Space ) {
+                    calibrate = false;
+                }
+            }
+            else if ( event.type == sf::Event::MouseButtonPressed ) {
+                if ( event.mouseButton.button == sf::Mouse::Right ) {
                     // Reset filters
                     for( unsigned int i = 0 ; i < sen ; i++ ) {
                         n[i].reset();
                         cama[i].reset();
                         axyz[i].reset();
                     }
-                }
-            }
-            else if ( event.type == sf::Event::MouseButtonReleased ) {
-                if ( event.mouseButton.button == sf::Mouse::Left ) {
-                    calibrate = false;
                 }
             }
         }
