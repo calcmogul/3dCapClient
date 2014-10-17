@@ -31,6 +31,14 @@ std::vector<Normalize> n( sen );
 std::vector<WeightedAverageFilter> cama( sen , WeightedAverageFilter(0.04) );
 std::vector<KalmanFilter> axyz( sen , KalmanFilter(0.00006 , 0.0001) );
 
+enum SerialStatus {
+    validData = 0 ,
+    connected = 1 ,
+    disconnected = 2
+};
+
+SerialStatus status = SerialStatus::disconnected;
+
 #if 0
 float cutoff = 0.2;
 int getPosition( float x ) {
@@ -142,6 +150,8 @@ int main() {
 
         // Read line of serialPort data
         if ( serialPort.isConnected() ) {
+            status = SerialStatus::connected;
+
             while ( (numRead = serialPort.read( &curChar , 1 )) > 0 && curChar != '\n' &&
                     curChar != '\0' ) {
                 serialPortData += curChar;
@@ -150,6 +160,7 @@ int main() {
             if ( numRead == -1 ) {
                 // EOF has been reached (socket disconnected)
                 serialPort.disconnect();
+                status = SerialStatus::disconnected;
             }
             // If curChar == '\n', there is a new line of complete data
             else if ( curChar == '\n' && serialPortData.length() != 0 ) {
@@ -160,6 +171,8 @@ int main() {
                 if ( parts.size() == sen ) {
                     float xyz[sen];
                     float raw;
+
+                    status = SerialStatus::validData;
 
                     for ( unsigned int i = 0 ; i < sen ; i++ ) {
                         xyz[i] = std::atof( parts[i].c_str() );
@@ -205,12 +218,48 @@ int main() {
 
         glPushMatrix();
 
+        // Draw connection indicator
+        glPushMatrix();
+
         gluLookAt(
-          w / 2 + (cama[0].getEstimate() - cama[2].getEstimate()) * w / 2,
-          (w * 3 + (cama[1].getEstimate() - 1) * mainWin.getSize().y / 2),
-          w * 2,
-          w / 2, w / 2, w / 2,
-          0, 1, 0);
+          0.f , 0.f , w * 2 ,
+          0.f , 0.f , w / 2 ,
+          0 , 1 , 0 );
+
+        glTranslatef(
+                36.f - static_cast<int>(mainWin.getSize().x) / 2.f ,
+                -36.f + static_cast<int>(mainWin.getSize().y) / 2.f ,
+                0.f );
+
+        switch ( status ) {
+        case SerialStatus::validData: {
+            glColor3ub( 0 , 200 , 0 );
+            break;
+        }
+        case SerialStatus::connected: {
+            glColor3ub( 255 , 220 , 0 );
+            break;
+        }
+        case SerialStatus::disconnected: {
+            glColor3ub( 200 , 0 , 0 );
+            break;
+        }
+        }
+
+        //glShadeModel( GL_FLAT );
+        glDisable( GL_LIGHTING );
+        drawCircle( 18.f , 32.f );
+        glEnable( GL_LIGHTING );
+        //glShadeModel( GL_SMOOTH );
+
+        glPopMatrix();
+
+        gluLookAt(
+          w / 2 + (cama[0].getEstimate() - cama[2].getEstimate()) * w / 2 ,
+          (w * 3 + (cama[1].getEstimate() - 1) * mainWin.getSize().y / 2) ,
+          w * 2 ,
+          w / 2 , w / 2 , w / 2 ,
+          0 , 1 , 0 );
 
         /* The sensor's coordinate axes are oriented differently from OpenGL's
          * axes, so rotate the view until they match. glTranslatef() is used to
@@ -220,7 +269,7 @@ int main() {
          */
         glTranslatef( w / 2 , w / 2 , w / 2 );
         glRotatef( 180.f , 1.f , 0.f , 0.f );
-        glTranslatef( -w / 2 , -w / 2, -w / 2 );
+        glTranslatef( -w / 2 , -w / 2 , -w / 2 );
 
         glPushMatrix();
 
@@ -247,9 +296,9 @@ int main() {
         float posModifier = w - subDivWidth;
 
         glTranslatef(
-          axyz[0].getEstimate() * posModifier,
-          axyz[1].getEstimate() * posModifier,
-          axyz[2].getEstimate() * posModifier);
+          axyz[0].getEstimate() * posModifier ,
+          axyz[1].getEstimate() * posModifier ,
+          axyz[2].getEstimate() * posModifier );
 
         // Draw sphere for current position of hand
         glColor4ub( 255 , 160 , 0 , 200 );

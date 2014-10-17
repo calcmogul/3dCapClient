@@ -6,6 +6,7 @@
 
 #include "GLUtils.hpp"
 #include <GL/glu.h>
+#include <cmath>
 
 void drawBox( float width , GLenum fillType ) {
     float height = width, depth = width;
@@ -94,4 +95,26 @@ void drawBox( float width , GLenum fillType ) {
     }
 
     glPopMatrix();
+}
+
+void drawCircle( float radius , float points ) {
+    glBegin( GL_TRIANGLE_FAN );
+
+    glVertex3f( 0.f , 0.f , 0.f );
+
+    for ( float theta = 0.f ; theta < 360.f ; theta += 360.f / points ) {
+        glVertex3f(
+                radius * cos( theta * M_PI / 180.f ) ,
+                radius * sin( theta * M_PI / 180.f ) ,
+                0.f
+        );
+    }
+
+    glVertex3f(
+            radius ,
+            0.f ,
+            0.f
+    );
+
+    glEnd();
 }

@@ -14,6 +14,6 @@
  */
 void drawBox( float width , GLenum fillType );
 
-void drawSphere( float radius , float slices , float stacks );
+void drawCircle( float radius , float points );
 
 #endif // GL_UTILS_HPP
