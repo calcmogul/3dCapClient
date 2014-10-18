@@ -15,6 +15,8 @@
 #include <errno.h>   // Error number definitions
 #include <termios.h> // POSIX terminal control definitions
 #include <dirent.h>  // Method for listing serial ports
+#include <sys/types.h>
+#include <sys/stat.h>
 #endif
 
 const unsigned int SerialPort::m_waitTime = 2000;
@@ -202,11 +204,18 @@ int SerialPort::read( char* buffer , unsigned int nbChar ) {
 #else
     bytesRead = ::read( m_fd , buffer , nbChar );
 
-    if ( bytesRead == 0 || (bytesRead == -1 && errno != EAGAIN) ) {
+    // Check for disconnection
+    if ( bytesRead == 0 ) {
+        struct stat fileStats;
+        if ( stat( m_portName.c_str() , &fileStats ) == -1 ) {
+            return -1;
+        }
+    }
+    else if ( bytesRead == -1 && errno != EAGAIN ) {
         return -1;
     }
     else {
-        return bytesRead;
+        return std::max( bytesRead , 0 );
     }
 #endif
 }
