@@ -47,18 +47,18 @@ float Normalize::linearize( float value ) {
     float normalized = normalize( value );
 
     if ( normalized == 0.f ) {
-        return 0.f;
+        return 1.f;
     }
 
     float linear = sqrt( 1 / normalized );
 
     linear = ( linear - m_minDistance ) / ( m_maxDistance - m_minDistance );
 
-    if ( linear < m_minDistance ) {
-        return m_minDistance;
+    if ( linear < 0.f ) {
+        return 0.f;
     }
-    else if ( linear > m_maxDistance ) {
-        return m_maxDistance;
+    else if ( linear > 1.f ) {
+        return 1.f;
     }
 
     return linear;
