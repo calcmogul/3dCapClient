@@ -17,11 +17,14 @@
 #include "KalmanFilter.hpp"
 #include "Util.hpp"
 #include "GLUtils.hpp"
+#include "Matrix.hpp"
 
 #include <SFML/Window/Window.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
+
+//#define USE_RAW_INPUT
 
 int main() {
     const unsigned int sen = 3; // sensors
@@ -42,6 +45,10 @@ int main() {
     float w = 256; // board size
     bool flip[sen] = { false , true , false };
 
+#ifdef USE_RAW_INPUT
+    float xyz[sen];
+#endif
+
     sf::ContextSettings settings;
     settings.depthBits = 32;
     settings.stencilBits = 0;
@@ -53,6 +60,9 @@ int main() {
     sf::Window mainWin( sf::VideoMode( 800 , 600 ) , "3D Capacitor Demo" ,
             sf::Style::Titlebar | sf::Style::Close , settings );
     mainWin.setFramerateLimit( 25 );
+
+    sf::Vector2i mouseDragStart = sf::Mouse::getPosition( mainWin );
+    Matrix<GLfloat> rotationMat( 4 , 4 ); // column x row
 
     // Set buffer clear values
     glClearColor( 1.f , 1.f , 1.f , 1.f );
@@ -131,6 +141,53 @@ int main() {
                     }
                 }
             }
+            else if ( event.type == sf::Event::MouseMoved ) {
+                Matrix<GLfloat> tempMat( 4 , 4 );
+
+                float mag = std::hypot( event.mouseMove.x , event.mouseMove.y );
+                float x = event.mouseMove.x;
+                float y = event.mouseMove.y;
+                float angle = mag;
+                float c = std::cos( angle );
+                float s = std::sin( angle );
+                x /= mag;
+                y /= mag;
+
+                /*tempMat[0][0] = x * x * ( 1 - c ) + c;
+                tempMat[0][1] = y * x * ( 1 - c ) + z * s;
+                tempMat[0][2] = x * z * ( 1 - c ) - y * s;
+                tempMat[0][3] = 0;
+                tempMat[1][0] = x * y * ( 1 - c ) - z * s;
+                tempMat[1][1] = y * y * ( 1 - c ) + c;
+                tempMat[1][2] = y * z * ( 1 - c ) + x * s;
+                tempMat[1][3] = 0;
+                tempMat[2][0] = x * z * ( 1 - c ) + y * s;
+                tempMat[2][1] = y * z * ( 1 - c ) - x * s;
+                tempMat[2][2] = z * z * ( 1 - c ) + c;
+                tempMat[2][3] = 0;
+                tempMat[3][0] = 0;
+                tempMat[3][1] = 0;
+                tempMat[3][2] = 0;
+                tempMat[3][3] = 1;*/
+                tempMat[0][0] = x * x * ( 1 - c ) + c;
+                tempMat[0][1] = y * x * ( 1 - c );
+                tempMat[0][2] = -y * s;
+                tempMat[0][3] = 0;
+                tempMat[1][0] = x * y * ( 1 - c );
+                tempMat[1][1] = y * y * ( 1 - c ) + c;
+                tempMat[1][2] = x * s;
+                tempMat[1][3] = 0;
+                tempMat[2][0] = y * s;
+                tempMat[2][1] = -x * s;
+                tempMat[2][2] = c;
+                tempMat[2][3] = 0;
+                tempMat[3][0] = 0;
+                tempMat[3][1] = 0;
+                tempMat[3][2] = 0;
+                tempMat[3][3] = 1;
+
+
+            }
         }
 
         // Attempt a connection
@@ -159,7 +216,9 @@ int main() {
                 std::vector<std::string> parts = split( serialPortData , " " );
 
                 if ( parts.size() == sen ) {
+#ifndef USE_RAW_INPUT
                     float xyz[sen];
+#endif
                     float raw;
 
                     haveValidData = true;
@@ -257,6 +316,9 @@ int main() {
          */
         glTranslatef( w / 2 , w / 2 , w / 2 );
         glRotatef( 180.f , 1.f , 0.f , 0.f );
+        float* data = rotationMat.data();
+        glMultMatrixf( data ); // Rotate view with mouse
+        delete data;
         glTranslatef( -w / 2 , -w / 2 , -w / 2 );
 
         glPushMatrix();
@@ -283,10 +345,26 @@ int main() {
          */
         float posModifier = w - subDivWidth;
 
+#ifdef USE_RAW_INPUT
+        float raw[sen];
+        for ( unsigned int i = 0 ; i < sen ; i++ ) {
+            raw[i] = n[i].linearize( xyz[i] );
+
+            if ( flip[i] ) {
+                raw[i] = 1 - raw[i];
+            }
+        }
+
+        glTranslatef(
+                  raw[0] * posModifier ,
+                  raw[1] * posModifier ,
+                  raw[2] * posModifier );
+#else
         glTranslatef(
           axyz[0].getEstimate() * posModifier ,
           axyz[1].getEstimate() * posModifier ,
           axyz[2].getEstimate() * posModifier );
+#endif
 
         // Draw sphere for current position of hand
         glColor4ub( 255 , 160 , 0 , 200 );
