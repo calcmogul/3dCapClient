@@ -4,16 +4,15 @@
 //Author: Tyler Veness
 //=============================================================================
 
-#include <new>
 #include <cstdint>
+#include <cstring>
 #include <stdexcept>
 
 template <class T>
 Matrix<T>::Matrix( size_t width , size_t height ) :
-m_matrix( new T[width * height] ) ,
 m_width( width ) ,
 m_height( height ) {
-
+    m_matrix = new T[width * height];
 }
 
 template <class T>
@@ -22,26 +21,44 @@ Matrix<T>::~Matrix() {
 }
 
 template <class T>
-Matrix<T>::Matrix( std::vector<T> rhs ) {
-    m_matrix.push_back( rhs );
+Matrix<T>::Matrix( T rhs ) :
+m_matrix( new T[1] ) ,
+m_width ( 1 ) ,
+m_height( 1 ) {
+    m_matrix[0] = rhs;
 }
 
 template <class T>
-Matrix<T>::Matrix( T rhs ) :
-m_matrix( new T[1 * 1] ) ,
-m_width ( 1 ) ,
-m_height( 1 ) {
-    m_matrix[0][0] = rhs;
+Matrix<T>::Matrix( const Matrix<T>& rhs ) :
+m_width( rhs.width() ) ,
+m_height( rhs.height() ) {
+    m_matrix = new T[m_width * m_height];
+
+    T* src = rhs.m_matrix;
+    T* dest = m_matrix;
+
+    while ( (*dest++ = *src++) );
 }
 
 template <class T>
 Matrix<T>& Matrix<T>::operator=( const Matrix<T>& rhs ) {
     if ( this != &rhs ) {
         if ( width() != rhs.width() || height() != rhs.height() ) {
-            throw std::domain_error( "arguments have incompatible dimensions" );
+#if 1
+            throw std::domain_error( "Domain error: arguments have incompatible dimensions" );
+#else
+            delete[] m_matrix;
+            m_matrix = new T[rhs.width() * rhs.height()];
+
+            m_width = rhs.width();
+            m_height = rhs.height();
+#endif
         }
         else {
-            while ( (*m_matrix[0]++ = *rhs.m_matrix[0]++) );
+            T* src = rhs.m_matrix;
+            T* dest = m_matrix;
+
+            while ( (*dest++ = *src++) );
         }
     }
 
@@ -49,47 +66,42 @@ Matrix<T>& Matrix<T>::operator=( const Matrix<T>& rhs ) {
 }
 
 template <class T>
+Matrix<T>& Matrix<T>::operator=( Matrix<T>&& rhs ) {
+    assert( this != &rhs );
+
+    delete[] m_matrix;
+    m_matrix = rhs.m_matrix;
+    m_width = rhs.width();
+    m_height = rhs.height();
+    rhs.m_matrix = nullptr;
+
+    return *this;
+}
+
+template <class T>
 Matrix<T>& Matrix<T>::operator+( const Matrix<T>& rhs ) {
-    return Matrix<T>( *this ) += rhs;
+    return *this += rhs;
 }
 
 template <class T>
 Matrix<T>& Matrix<T>::operator-( const Matrix<T>& rhs ) {
-    return Matrix<T>( *this ) -= rhs;
+    return *this -= rhs;
 }
 
 template <class T>
 Matrix<T>& Matrix<T>::operator*( const Matrix<T>& rhs ) {
-    if ( width() != rhs.height() ) {
-        throw std::domain_error( "arguments have incompatible dimensions" );
-    }
-    else {
-        Matrix<T> temp( height() * rhs.width() );
-        for ( uint32_t i = 0 ; i < temp.width() * temp.height() ; i++ ) {
-            temp.m_matrix[i] = 0;
-        }
-
-        for ( uint32_t i = 0 ; i < width() ; i++ ) {
-            for ( uint32_t j = 0 ; j < height() ; j++ ) {
-                for ( uint32_t k = 0 ; k < width() ; k++ ) {
-                    temp[i][j] += m_matrix[i + k][j] * rhs.m_matrix[i][j + k];
-                }
-            }
-        }
-
-        return temp;
-    }
+    return *this *= rhs;
 }
 
 template <class T>
 Matrix<T>& Matrix<T>::operator+=( const Matrix<T>& rhs ) {
     if ( width() != rhs.width() || height() != rhs.height() ) {
-        throw std::domain_error( "arguments have incompatible dimensions" );
+        throw std::domain_error( "Domain error: arguments have incompatible dimensions" );
     }
 
     for ( uint32_t i = 0 ; i < width() ; i++ ) {
         for ( uint32_t j = 0 ; j < height() ; j++ ) {
-            m_matrix[i][j] += rhs.m_matrix[i][j];
+            m_matrix( i , j ) += rhs.m_matrix( i , j );
         }
     }
 
@@ -99,16 +111,37 @@ Matrix<T>& Matrix<T>::operator+=( const Matrix<T>& rhs ) {
 template <class T>
 Matrix<T>& Matrix<T>::operator-=( const Matrix<T>& rhs ) {
     if ( width() != rhs.width() || height() != rhs.height() ) {
-        throw std::domain_error( "arguments have incompatible dimensions" );
+        throw std::domain_error( "Domain error: arguments have incompatible dimensions" );
     }
 
     for ( uint32_t i = 0 ; i < width() ; i++ ) {
         for ( uint32_t j = 0 ; j < height() ; j++ ) {
-            m_matrix[i][j] -= rhs.m_matrix[i][j];
+            m_matrix( i , j ) -= rhs.m_matrix( i , j );
         }
     }
 
     return *this;
+}
+
+template <class T>
+Matrix<T>& Matrix<T>::operator*=( const Matrix<T>& rhs ) {
+    if ( width() != rhs.height() ) {
+        throw std::domain_error( "Domain error: arguments have incompatible dimensions" );
+    }
+    else {
+        Matrix<T> temp( rhs.width() , height() );
+        std::memset( temp.m_matrix , 0 , temp.width() * temp.height() );
+
+        for ( uint32_t i = 0 ; i < width() ; i++ ) {
+            for ( uint32_t j = 0 ; j < height() ; j++ ) {
+                for ( uint32_t k = 0 ; k < width() ; k++ ) {
+                    temp( i , j ) += operator()( k , j ) * rhs( i , k );
+                }
+            }
+        }
+
+        return *this = temp;
+    }
 }
 
 template <class T>
@@ -119,7 +152,7 @@ bool Matrix<T>::operator==( const Matrix<T>& rhs ) const {
     else {
         for ( uint32_t i = 0 ; i < width() ; i++ ) {
             for ( uint32_t j = 0 ; j < height() ; j++ ) {
-                if ( m_matrix[i][j] != rhs.m_matrix[i][j] ) {
+                if ( operator()( i , j ) != rhs( i , j ) ) {
                     return false;
                 }
             }
@@ -135,84 +168,41 @@ bool Matrix<T>::operator!=( const Matrix<T>& rhs ) const {
 }
 
 template <class T>
-T* Matrix<T>::operator[]( size_t i ) {
-    return &m_matrix[i];
-
-#if 0
-    size_t tempSize = 1;
-    if ( width() > 1 ) {
-        Matrix<T> temp( height() , 1 );
-
-        for ( uint32_t j = 0 ; j < height() ; j++ ) {
-            temp[j] = m_matrix[i * height() + j];
-        }
-
-        return temp;
+T& Matrix<T>::operator()( size_t w , size_t h ) {
+    if ( w > width() - 1 || h > height() - 1 ) {
+        throw std::out_of_range( "Out of Range error: array indices out of bounds" );
     }
-    else {
-        Matrix<T> temp( 1 , 1 );
 
-        temp[0] = m_matrix[i];
-
-        return temp;
-    }
-#endif
+    return m_matrix[w * height() + h];
 }
 
 template <class T>
-const T* Matrix<T>::operator[]( size_t i ) const {
-    return &const_cast<T*>(*this)[i];
+const T& Matrix<T>::operator()( size_t w , size_t h ) const {
+    return const_cast<Matrix<T>&>(*this)( w , h );
 }
-
-#if 0
-template <class T>
-Matrix<T>& Matrix<T>::operator[]( size_t i ) {
-    return m_matrix[i];
-
-#if 0
-    size_t tempSize = 1;
-    if ( width() > 1 ) {
-        Matrix<T> temp( height() , 1 );
-
-        for ( uint32_t j = 0 ; j < height() ; j++ ) {
-            temp[j] = m_matrix[i * height() + j];
-        }
-
-        return temp;
-    }
-    else {
-        Matrix<T> temp( 1 , 1 );
-
-        temp[0] = m_matrix[i];
-
-        return temp;
-    }
-#endif
-}
-
-template <class T>
-const Matrix<T>& Matrix<T>::operator[]( size_t i ) const {
-    return const_cast<Matrix<T>&>(*this)[i];
-}
-#endif
 
 template <class T>
 Matrix<T>& Matrix<T>::augment( const Matrix<T>& mat ) {
     if ( height() != mat.height() ) {
-        throw std::domain_error( "arguments have incompatible dimensions" );
+        throw std::domain_error( "Domain error: arguments have incompatible dimensions" );
     }
 
-    for ( uint32_t i = 0 ; i < mat.m_matrix.size() ; i++ ) {
-        m_matrix.push_back( mat.m_matrix[i] );
+    for ( uint32_t i = 0 ; i < mat.size() ; i++ ) {
+        T temp[size() + mat.size()];
+
+        T* src = mat.m_matrix;
+        T* dest = m_matrix;
+
+        while ( (*dest++ = *src++) );
     }
 
     return *this;
 }
 
 template <class T>
-Matrix<T>& Matrix<T>::inverse() {
+Matrix<T>& Matrix<T>::inverse() const {
     if ( width() != height() || det() == 0 ) {
-        throw std::domain_error( "matrix is not invertible" );
+        throw std::domain_error( "Domain error: matrix is not invertible" );
     }
 
     Matrix<T> temp( width() , height() );
@@ -221,10 +211,10 @@ Matrix<T>& Matrix<T>::inverse() {
     for ( uint32_t i = 0 ; i < width() ; i++ ) {
         for ( uint32_t j = 0 ; j < height() ; j++ ) {
             if ( i == j ) {
-                temp[i][j] = 1;
+                temp( i , j ) = 1;
             }
             else {
-                temp[i][j] = 0;
+                temp( i , j ) = 0;
             }
         }
     }
@@ -244,7 +234,7 @@ Matrix<T>& Matrix<T>::inverse() {
 template <class T>
 T Matrix<T>::det() const {
     if ( width() != height() ) {
-        throw std::domain_error( "argument is not a square matrix" );
+        throw std::domain_error( "Domain error: argument is not a square matrix" );
     }
 
     Matrix<T> temp = *this;
@@ -259,7 +249,7 @@ T Matrix<T>::det() const {
         T product = 1;
 
         for ( uint32_t j = 0 ; j < height() ; j++ ) {
-            product *= temp[i+j][j];
+            product *= temp( i+j , j );
         }
 
         result += product;
@@ -269,7 +259,7 @@ T Matrix<T>::det() const {
         T product = -1;
 
         for ( uint32_t j = 0 ; j < height() ; j++ ) {
-            product *= temp[i+j][j];
+            product *= temp( i+j , j );
         }
 
         result += product;
@@ -279,7 +269,20 @@ T Matrix<T>::det() const {
 }
 
 template <class T>
-Matrix<T>& Matrix<T>::ref() const {
+Matrix<T> Matrix<T>::transpose() const {
+    Matrix<T> temp( height() , width() );
+
+    for ( uint32_t i = 0 ; i < width() ; i++ ) {
+        for ( uint32_t j = 0 ; j < height() ; j++ ) {
+            temp( j , i ) = operator()( i , j );
+        }
+    }
+
+    return temp;
+}
+
+template <class T>
+Matrix<T> Matrix<T>::ref() const {
     Matrix<T> temp = *this;
 
 #if 0
@@ -298,7 +301,7 @@ Matrix<T>& Matrix<T>::ref() const {
 }
 
 template <class T>
-Matrix<T>& Matrix<T>::rref() const {
+Matrix<T> Matrix<T>::rref() const {
     Matrix<T> temp = *this;
 }
 
