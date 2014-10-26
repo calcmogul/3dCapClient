@@ -18,11 +18,11 @@ PREFIX :=
 
 CC := gcc
 CFLAGS_DEBUG := -O0 -g3 -Wall -std=c11
-CFLAGS_RELEASE := -O3 -Wall -s -std=c11
+CFLAGS_RELEASE := -O3 -Wall -s -std=c11 -flto
 
 CXX := g++
 CXXFLAGS_DEBUG := -O0 -g3 -Wall -std=c++11
-CXXFLAGS_RELEASE := -O3 -Wall -s -std=c++11
+CXXFLAGS_RELEASE := -O3 -Wall -s -std=c++11 -flto
 
 RC := windres
 
