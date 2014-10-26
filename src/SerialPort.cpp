@@ -210,6 +210,9 @@ int SerialPort::read( char* buffer , unsigned int nbChar ) {
         if ( stat( m_portName.c_str() , &fileStats ) == -1 ) {
             return -1;
         }
+        else {
+            return 0;
+        }
     }
     else if ( bytesRead == -1 && errno != EAGAIN ) {
         return -1;
