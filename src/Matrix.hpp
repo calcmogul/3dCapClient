@@ -8,9 +8,15 @@
 #define MATRIX_HPP
 
 template <class T>
+class Matrix;
+
+template <class T>
+std::ostream& operator<<( std::ostream& , const Matrix<T>& );
+
+template <class T>
 class Matrix {
 public:
-    Matrix( size_t width , size_t height );
+    Matrix( size_t height , size_t width , bool initAsIdent = false );
     virtual ~Matrix();
 
     Matrix( T rhs );
@@ -36,13 +42,18 @@ public:
     /* Returns value contained by matrix at (w, h)
      * Evaluates column first and row second.
      */
-    T& operator() ( size_t w , size_t h );
-    const T& operator() ( size_t w , size_t h ) const;
+    T& operator() ( size_t h , size_t w );
+    const T& operator() ( size_t h , size_t w ) const;
 
     /* Augment this matrix with mat
      * throws std::domain_error with dim mismatch
      */
-    Matrix<T>& augment( const Matrix<T>& mat );
+    void augment( const Matrix<T>& mat );
+
+    /* Causes functions like RREF and inverse() to ignore augmented part of
+     * matrix
+     */
+    void unaugment();
 
     // throws std::domain_error with dim mismatch
     Matrix<T>& inverse() const;
@@ -69,15 +80,29 @@ public:
     void resize( size_t n );
     size_t size() const;
 
-    size_t width() const;
     size_t height() const;
+    size_t width() const;
+
+    friend std::ostream& operator<< <T>( std::ostream& output ,
+            const Matrix<T>& rhs );
 
 private:
-    // column-major matrix
+    // row-major matrix
     T* m_matrix;
-    size_t m_width;
     size_t m_height;
+    size_t m_width;
+    bool m_isAugmented;
+
+    Matrix<T>* m_augment;
 };
+
+namespace Mat {
+template <class T>
+Matrix<T> createQuaternion( T angle , T x , T y , T z );
+
+template <class T>
+Matrix<T> createIdentity( size_t height , size_t width );
+}
 
 #include "Matrix.inl"
 

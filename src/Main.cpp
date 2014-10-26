@@ -43,7 +43,7 @@ int main() {
     unsigned int ixyz[sen];
 
     float w = 256; // board size
-    bool flip[sen] = { false , true , false };
+    bool flip[sen] = { true , true , true };
 
 #ifdef USE_RAW_INPUT
     float xyz[sen];
@@ -62,23 +62,7 @@ int main() {
     mainWin.setFramerateLimit( 25 );
 
     sf::Vector2i lastMousePos = sf::Mouse::getPosition( mainWin );
-    Matrix<GLfloat> rotationMat( 4 , 4 ); // column x row
-    rotationMat( 0 , 0 ) = 1;
-    rotationMat( 0 , 1 ) = 0;
-    rotationMat( 0 , 2 ) = 0;
-    rotationMat( 0 , 3 ) = 0;
-    rotationMat( 1 , 0 ) = 0;
-    rotationMat( 1 , 1 ) = 1;
-    rotationMat( 1 , 2 ) = 0;
-    rotationMat( 1 , 3 ) = 0;
-    rotationMat( 2 , 0 ) = 0;
-    rotationMat( 2 , 1 ) = 0;
-    rotationMat( 2 , 2 ) = 1;
-    rotationMat( 2 , 3 ) = 0;
-    rotationMat( 3 , 0 ) = 0;
-    rotationMat( 3 , 1 ) = 0;
-    rotationMat( 3 , 2 ) = 0;
-    rotationMat( 3 , 3 ) = 1;
+    Matrix<GLfloat> rotationMat( 4 , 4 , true );
 
     // Set buffer clear values
     glClearColor( 1.f , 1.f , 1.f , 1.f );
@@ -155,57 +139,22 @@ int main() {
                         cama[i].reset();
                         axyz[i].reset();
                     }
+
+                    rotationMat = Mat::createIdentity<GLfloat>( rotationMat.height() , rotationMat.width() );
                 }
             }
-            else if ( event.type == sf::Event::MouseMoved &&
-                    sf::Mouse::isButtonPressed( sf::Mouse::Button::Left ) ) {
-                Matrix<GLfloat> tempMat( 4 , 4 );
+            else if ( event.type == sf::Event::MouseMoved ) {
+                if ( sf::Mouse::isButtonPressed( sf::Mouse::Button::Left ) ) {
+                    float x = event.mouseMove.x - lastMousePos.x;
+                    float y = event.mouseMove.y - lastMousePos.y;
+                    float mag = std::hypot( x , y );
+                    float angle = mag / 2;
 
-                float x = event.mouseMove.x - lastMousePos.x;
-                float y = event.mouseMove.y - lastMousePos.y;
-                float mag = std::hypot( x , y );
-                float angle = mag;
-                float c = std::cos( angle );
-                float s = std::sin( angle );
-                x /= mag;
-                y /= mag;
-                std::cout << "angle=" << angle << "\n";
+                    Matrix<GLfloat> temp( 4 , 4 );
+                    temp = Mat::createQuaternion( angle , -y , x , 0.f );
 
-                /*tempMat( 0 , 0 ) = x * x * ( 1 - c ) + c;
-                tempMat( 0 , 1 ) = y * x * ( 1 - c ) + z * s;
-                tempMat( 0 , 2 ) = x * z * ( 1 - c ) - y * s;
-                tempMat( 0 , 3 ) = 0;
-                tempMat( 1 , 0 ) = x * y * ( 1 - c ) - z * s;
-                tempMat( 1 , 1 ) = y * y * ( 1 - c ) + c;
-                tempMat( 1 , 2 ) = y * z * ( 1 - c ) + x * s;
-                tempMat( 1 , 3 ) = 0;
-                tempMat( 2 , 0 ) = x * z * ( 1 - c ) + y * s;
-                tempMat( 2 , 1 ) = y * z * ( 1 - c ) - x * s;
-                tempMat( 2 , 2 ) = z * z * ( 1 - c ) + c;
-                tempMat( 2 , 3 ) = 0;
-                tempMat( 3 , 0 ) = 0;
-                tempMat( 3 , 1 ) = 0;
-                tempMat( 3 , 2 ) = 0;
-                tempMat( 3 , 3 ) = 1;*/
-
-                tempMat( 0 , 0 ) = x * x * ( 1 - c ) + c;
-                tempMat( 0 , 1 ) = y * x * ( 1 - c );
-                tempMat( 0 , 2 ) = -y * s;
-                tempMat( 0 , 3 ) = 0;
-                tempMat( 1 , 0 ) = x * y * ( 1 - c );
-                tempMat( 1 , 1 ) = y * y * ( 1 - c ) + c;
-                tempMat( 1 , 2 ) = x * s;
-                tempMat( 1 , 3 ) = 0;
-                tempMat( 2 , 0 ) = y * s;
-                tempMat( 2 , 1 ) = -x * s;
-                tempMat( 2 , 2 ) = c;
-                tempMat( 2 , 3 ) = 0;
-                tempMat( 3 , 0 ) = 0;
-                tempMat( 3 , 1 ) = 0;
-                tempMat( 3 , 2 ) = 0;
-                tempMat( 3 , 3 ) = 1;
-
-                rotationMat *= tempMat;
+                    rotationMat *= temp;
+                }
 
                 lastMousePos.x = event.mouseMove.x;
                 lastMousePos.y = event.mouseMove.y;
@@ -338,7 +287,8 @@ int main() {
          */
         glTranslatef( w / 2 , w / 2 , w / 2 );
         glRotatef( 180.f , 1.f , 0.f , 0.f );
-        //glMultMatrixf( rotationMat.transpose().data() ); // Rotate view with mouse
+
+        glMultMatrixf( rotationMat.transpose().data() ); // Rotate view with mouse
         glTranslatef( -w / 2 , -w / 2 , -w / 2 );
 
         glPushMatrix();
