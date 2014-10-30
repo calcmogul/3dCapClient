@@ -153,7 +153,7 @@ int main() {
                     Matrix<GLfloat> temp( 4 , 4 );
                     temp = Mat::createQuaternion( angle , -y , x , 0.f );
 
-                    rotationMat *= temp;
+                    rotationMat = temp * rotationMat;
                 }
 
                 lastMousePos.x = event.mouseMove.x;
