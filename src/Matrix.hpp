@@ -39,7 +39,7 @@ public:
     bool operator==( const Matrix<T>& rhs ) const;
     bool operator!=( const Matrix<T>& rhs ) const;
 
-    /* Returns value contained by matrix at (w, h)
+    /* Returns value contained by matrix at (h, w)
      * Evaluates column first and row second.
      */
     T& operator() ( size_t h , size_t w );
@@ -49,6 +49,8 @@ public:
      * throws std::domain_error with dim mismatch
      */
     void augment( const Matrix<T>& mat );
+
+    Matrix<T> getAugment() const;
 
     /* Causes functions like RREF and inverse() to ignore augmented part of
      * matrix

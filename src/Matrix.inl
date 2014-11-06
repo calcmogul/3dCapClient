@@ -217,6 +217,11 @@ void Matrix<T>::augment( const Matrix<T>& mat ) {
 }
 
 template <class T>
+Matrix<T> Matrix<T>::getAugment() const {
+    return *m_augment;
+}
+
+template <class T>
 void Matrix<T>::unaugment() {
     m_isAugmented = false;
 
@@ -235,6 +240,8 @@ Matrix<T>& Matrix<T>::inverse() const {
     augment( temp );
 
     Matrix<T> temp2 = rref();
+
+    *this = temp2.getAugment();
 
     unaugment();
 
