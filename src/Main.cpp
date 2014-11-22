@@ -40,7 +40,7 @@ int main() {
 
     SerialPort serialPort;
 
-    unsigned int ixyz[sen];
+    unsigned char ixyz[sen];
 
     float w = 256; // board size
     bool flip[sen] = { true , true , true };
@@ -218,6 +218,8 @@ int main() {
                          * position in array [0..subDivs-1]
                          */
                         ixyz[i] = std::lround( axyz[i].getEstimate() * (subDivs - 1) );
+
+                        serialPort.write( reinterpret_cast<char*>(&(*ixyz)) , sizeof(ixyz) );
                     }
                 }
                 else {
