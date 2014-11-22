@@ -302,19 +302,30 @@ template <class T>
 Matrix<T> Matrix<T>::ref() const {
     Matrix<T> temp = *this;
 
-#if 0
+    uint32_t i = 0;
+    uint32_t j = 0;
+
+    uint32_t k = 0;
+    while ( temp( k , 0 ) == 0 ) {
+        k++;
+    }
+    i = k;
+    temp( i , j );
+
     for ( uint32_t i = 0 ; i < height() ; i++ ) {
-        for ( uint32_t j = 0 ; j < width() ; j++ ) {
-            uint32_t idx = j * width() + i;
-            if ( m_matrix[idx] != 1 ) {
-                T divisor = m_matrix[idx];
-                for ( uint32_t k = m_matrix[idx] ; k < m_matrix[idx] + width() ; k++ ) {
-                    m_matrix[k] /= divisor;
+        T divisor = temp[i * width];
+
+        if ( divisor != 1 ) {
+            for ( uint32_t j = 0 ; j < width() ; j++ ) {
+                uint32_t idx = i * width() + j;
+                for ( uint32_t k = temp[idx] ; k < temp[idx] + width() ; k++ ) {
+                    temp[k] /= divisor;
                 }
             }
         }
     }
-#endif
+
+    return temp;
 }
 
 template <class T>
