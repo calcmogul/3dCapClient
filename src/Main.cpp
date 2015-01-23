@@ -57,6 +57,8 @@ int main() {
     settings.minorVersion = 0;
 
     // Setup
+//    sf::Window mainWin( sf::VideoMode() , "3D Capacitor Demo" ,
+//            sf::Style::Titlebar | sf::Style::Fullscreen , settings );
     sf::Window mainWin( sf::VideoMode( 800 , 600 ) , "3D Capacitor Demo" ,
             sf::Style::Titlebar | sf::Style::Close , settings );
     mainWin.setFramerateLimit( 25 );
@@ -124,6 +126,9 @@ int main() {
             else if ( event.type == sf::Event::KeyPressed ) {
                 if ( event.key.code == sf::Keyboard::Space ) {
                     calibrate = true;
+                }
+		else if ( event.key.code == sf::Keyboard::Escape ) {
+                    mainWin.close();
                 }
             }
             else if ( event.type == sf::Event::KeyReleased ) {
@@ -247,8 +252,8 @@ int main() {
           0 , 1 , 0 );
 
         glTranslatef(
-                36.f - static_cast<int>(mainWin.getSize().x) / 2.f ,
-                -36.f + static_cast<int>(mainWin.getSize().y) / 2.f ,
+                36.f - mainWin.getSize().x / 2.f ,
+                -36.f + mainWin.getSize().y / 2.f ,
                 0.f );
 
         if ( serialPort.isConnected() ) {
