@@ -1,8 +1,8 @@
-//=============================================================================
-//File Name: Matrix.hpp
-//Description: A utility library for manipulating matrices
-//Author: Tyler Veness
-//=============================================================================
+// =============================================================================
+// File Name: Matrix.hpp
+// Description: A utility library for manipulating matrices
+// Author: Tyler Veness
+// =============================================================================
 
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
@@ -42,8 +42,8 @@ public:
     /* Returns value contained by matrix at (h, w)
      * Evaluates column first and row second.
      */
-    T& operator() (size_t h, size_t w);
-    const T& operator() (size_t h, size_t w) const;
+    T& operator()(size_t h, size_t w);
+    const T& operator()(size_t h, size_t w) const;
 
     /* Augment this matrix with mat
      * throws std::domain_error with dim mismatch
@@ -85,8 +85,8 @@ public:
     size_t height() const;
     size_t width() const;
 
-    friend std::ostream& operator<< <T>(std::ostream& output,
-            const Matrix<T>& rhs);
+    friend std::ostream & operator<<<T>(std::ostream & output,
+                                        const Matrix<T> &rhs);
 
 private:
     // row-major matrix

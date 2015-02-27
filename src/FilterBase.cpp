@@ -1,8 +1,8 @@
-//=============================================================================
-//File Name: FilterBase.cpp
-//Description: Provides an interface for filter classes
-//Author: Tyler Veness
-//=============================================================================
+// =============================================================================
+// File Name: FilterBase.cpp
+// Description: Provides an interface for filter classes
+// Author: Tyler Veness
+// =============================================================================
 
 #include "FilterBase.hpp"
 
@@ -11,7 +11,6 @@ FilterBase::FilterBase() {
 }
 
 FilterBase::~FilterBase() {
-
 }
 
 void FilterBase::reset() {
@@ -23,3 +22,4 @@ void FilterBase::reset() {
 double FilterBase::getEstimate() {
     return m_stateEstimate;
 }
+

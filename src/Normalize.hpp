@@ -1,9 +1,9 @@
-//=============================================================================
-//File Name: Normalize.hpp
-//Description: Normalizes numbers from within a given range defined by a min
+// =============================================================================
+// File Name: Normalize.hpp
+// Description: Normalizes numbers from within a given range defined by a min
 //             and max to [0..1]
-//Author: Tyler Veness
-//=============================================================================
+// Author: Tyler Veness
+// =============================================================================
 
 #ifndef NORMALIZE_HPP
 #define NORMALIZE_HPP
@@ -15,10 +15,10 @@ public:
     /* Will replace either m_min or m_max with value if it is outside of the
      * range defined by m_min and m_max
      */
-    void expandRange( float value );
+    void expandRange(float value);
 
-    float normalize( float value );
-    float linearize( float value );
+    float normalize(float value);
+    float linearize(float value);
     void reset();
 
 private:
@@ -31,3 +31,4 @@ private:
 };
 
 #endif // NORMALIZE_HPP
+

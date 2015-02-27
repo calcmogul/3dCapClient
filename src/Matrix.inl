@@ -1,8 +1,8 @@
-//=============================================================================
-//File Name: Matrix.inl
-//Description: A utility library for manipulating matrices
-//Author: Tyler Veness
-//=============================================================================
+// =============================================================================
+// File Name: Matrix.inl
+// Description: A utility library for manipulating matrices
+// Author: Tyler Veness
+// =============================================================================
 
 #include <cstdint>
 #include <cstring>
@@ -11,13 +11,13 @@
 
 template <class T>
 Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
-m_height(height),
-m_width(width),
-m_isAugmented(false) {
+    m_height(height),
+    m_width(width),
+    m_isAugmented(false) {
     m_matrix = new T[height * width];
     m_augment = nullptr;
 
-    if ( initAsIdent ) {
+    if (initAsIdent) {
         // Create identity matrix
         for (uint32_t i = 0; i < m_height; i++) {
             for (uint32_t j = 0; j < m_width; j++) {
@@ -42,19 +42,19 @@ Matrix<T>::~Matrix() {
 
 template <class T>
 Matrix<T>::Matrix(T rhs) :
-m_matrix(new T[1]) ,
-m_height(1),
-m_width (1),
-m_isAugmented(false) {
+    m_matrix(new T[1]),
+    m_height(1),
+    m_width(1),
+    m_isAugmented(false) {
     m_matrix[0] = rhs;
     m_augment = nullptr;
 }
 
 template <class T>
 Matrix<T>::Matrix(const Matrix<T>& rhs) :
-m_height(rhs.height()) ,
-m_width(rhs.width()) ,
-m_isAugmented(false) {
+    m_height(rhs.height()),
+    m_width(rhs.width()),
+    m_isAugmented(false) {
     m_matrix = new T[m_height * m_width];
 
     std::memcpy(m_matrix, rhs.m_matrix, m_height * m_width * sizeof(T));
@@ -65,7 +65,8 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& rhs) {
     if (this != &rhs) {
         if (height() != rhs.height() || width() != rhs.width()) {
 #if 0
-            throw std::domain_error("Domain error: arguments have incompatible dimensions");
+            throw std::domain_error(
+                      "Domain error: arguments have incompatible dimensions");
 #else
             delete[] m_matrix;
             m_matrix = new T[rhs.height() * rhs.width()];
@@ -112,7 +113,8 @@ Matrix<T>& Matrix<T>::operator*(const Matrix<T>& rhs) {
 template <class T>
 Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
     if (height() != rhs.height() || width() != rhs.width()) {
-        throw std::domain_error("Domain error: arguments have incompatible dimensions");
+        throw std::domain_error(
+                  "Domain error: arguments have incompatible dimensions");
     }
 
     for (uint32_t i = 0; i < height(); i++) {
@@ -127,7 +129,8 @@ Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
 template <class T>
 Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
     if (height() != rhs.height() || width() != rhs.width()) {
-        throw std::domain_error("Domain error: arguments have incompatible dimensions");
+        throw std::domain_error(
+                  "Domain error: arguments have incompatible dimensions");
     }
 
     for (uint32_t i = 0; i < height(); i++) {
@@ -142,7 +145,8 @@ Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
 template <class T>
 Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
     if (width() != rhs.height()) {
-        throw std::domain_error("Domain error: arguments have incompatible dimensions");
+        throw std::domain_error(
+                  "Domain error: arguments have incompatible dimensions");
     }
     else {
         Matrix<T> temp(height(), rhs.width());
@@ -168,7 +172,7 @@ bool Matrix<T>::operator==(const Matrix<T>& rhs) const {
     else {
         for (uint32_t i = 0; i < height(); i++) {
             for (uint32_t j = 0; j < width(); j++) {
-                if ( operator()(i, j) != rhs(i, j) ) {
+                if (operator()(i, j) != rhs(i, j)) {
                     return false;
                 }
             }
@@ -186,8 +190,10 @@ bool Matrix<T>::operator!=(const Matrix<T>& rhs) const {
 template <class T>
 T& Matrix<T>::operator()(size_t h, size_t w) {
     if (h > height() - 1 || w > width() - 1) {
-        std::cout << h << " > " << height() - 1 << " || " << w << " > " << width() - 1 << "\n";
-        throw std::out_of_range("Out of Range error: array indices out of bounds");
+        std::cout << h << " > " << height() - 1 << " || " << w << " > " <<
+            width() - 1 << "\n";
+        throw std::out_of_range(
+                  "Out of Range error: array indices out of bounds");
     }
 
     // Use values in augmented matrix if w is past width of original matrix
@@ -207,7 +213,8 @@ const T& Matrix<T>::operator()(size_t h, size_t w) const {
 template <class T>
 void Matrix<T>::augment(const Matrix<T>& mat) {
     if (height() != mat.height()) {
-        throw std::domain_error("Domain error: arguments have incompatible dimensions");
+        throw std::domain_error(
+                  "Domain error: arguments have incompatible dimensions");
     }
 
     delete[] m_augment;

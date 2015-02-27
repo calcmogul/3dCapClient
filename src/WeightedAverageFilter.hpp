@@ -1,9 +1,9 @@
-//=============================================================================
-//File Name: WeightedAverageFilter.hpp
-//Description: Averages new value with old one using a given weight for the new
+// =============================================================================
+// File Name: WeightedAverageFilter.hpp
+// Description: Averages new value with old one using a given weight for the new
 //             one [0..1]
-//Author: Tyler Veness
-//=============================================================================
+// Author: Tyler Veness
+// =============================================================================
 
 #ifndef WEIGHTED_AVERAGE_FILTER_HPP
 #define WEIGHTED_AVERAGE_FILTER_HPP
@@ -14,12 +14,13 @@
 
 class WeightedAverageFilter : public FilterBase {
 public:
-    WeightedAverageFilter( float adapt );
+    WeightedAverageFilter(float adapt);
 
-    void update( double input );
+    void update(double input);
 
 private:
     float m_adapt;
 };
 
 #endif // WEIGHTED_AVERAGE_FILTER_HPP
+

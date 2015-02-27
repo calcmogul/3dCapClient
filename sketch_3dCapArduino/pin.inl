@@ -1,187 +1,188 @@
 #include "pin.h"
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::set( bool value ) {
-    if ( value ) {
-        Port::port(Port::port() | (1<<Pin));
+void pin<Port, Pin>::set(bool value) {
+    if (value) {
+        Port::port(Port::port() | (1 << Pin));
     }
     else {
-        Port::port(Port::port() & ~(1<<Pin));
+        Port::port(Port::port() & ~(1 << Pin));
     }
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::clear() {
-    set( false );
+void pin<Port, Pin>::clear() {
+    set(false);
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::toggle() {
-    Port::port(Port::port() ^ (1<<Pin));
+void pin<Port, Pin>::toggle() {
+    Port::port(Port::port() ^ (1 << Pin));
 }
 
 template <typename Port, int Pin>
-bool pin<Port,Pin>::get() {
-    return (Port::port() & (1<<Pin)) != 0;
+bool pin<Port, Pin>::get() {
+    return (Port::port() & (1 << Pin)) != 0;
 }
 
 template <typename Port, int Pin>
-bool pin<Port,Pin>::value() {
-    return (Port::pin() & (1<<Pin)) != 0;
+bool pin<Port, Pin>::value() {
+    return (Port::pin() & (1 << Pin)) != 0;
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::output( bool value ) {
-    if ( value ) {
-        Port::dir(Port::dir() | (1<<Pin));
+void pin<Port, Pin>::output(bool value) {
+    if (value) {
+        Port::dir(Port::dir() | (1 << Pin));
     }
     else {
-        Port::dir(Port::dir() & ~(1<<Pin));
+        Port::dir(Port::dir() & ~(1 << Pin));
     }
 }
 
 template <typename Port, int Pin>
-bool pin<Port,Pin>::output() {
-    return (Port::dir() & (1<<Pin)) != 0;
+bool pin<Port, Pin>::output() {
+    return (Port::dir() & (1 << Pin)) != 0;
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::make_output() {
-    output( true );
+void pin<Port, Pin>::make_output() {
+    output(true);
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::make_input() {
-    output( false );
+void pin<Port, Pin>::make_input() {
+    output(false);
     clear();
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::make_low() {
+void pin<Port, Pin>::make_low() {
     clear();
-    output( true );
+    output(true);
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::make_high() {
+void pin<Port, Pin>::make_high() {
     set();
-    output( true );
+    output(true);
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::set_value( bool value ) {
-    set( value );
+void pin<Port, Pin>::set_value(bool value) {
+    set(value);
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::set_high() {
-    set( true );
+void pin<Port, Pin>::set_high() {
+    set(true);
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::set_low() {
-    set( false );
+void pin<Port, Pin>::set_low() {
+    set(false);
 }
 
 template <typename Port, int Pin>
-bool pin<Port,Pin>::read() {
+bool pin<Port, Pin>::read() {
     return value();
 }
 
 template <typename Port, int Pin>
-void pin<Port,Pin>::pullup() {
+void pin<Port, Pin>::pullup() {
     set_high();
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::set( bool value ) {
-    if ( value ) {
-        Port::port(Port::port() & ~(1<<Pin));
+void inv_pin<Port, Pin>::set(bool value) {
+    if (value) {
+        Port::port(Port::port() & ~(1 << Pin));
     }
     else {
-        Port::port(Port::port() | (1<<Pin));
-	}
+        Port::port(Port::port() | (1 << Pin));
+    }
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::clear() {
-    set( false );
+void inv_pin<Port, Pin>::clear() {
+    set(false);
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::toggle() {
-    Port::port(Port::port() ^ (1<<Pin));
+void inv_pin<Port, Pin>::toggle() {
+    Port::port(Port::port() ^ (1 << Pin));
 }
 
 template <typename Port, int Pin>
-bool inv_pin<Port,Pin>::get() {
-    return (Port::port() & (1<<Pin)) == 0;
+bool inv_pin<Port, Pin>::get() {
+    return (Port::port() & (1 << Pin)) == 0;
 }
 
 template <typename Port, int Pin>
-bool inv_pin<Port,Pin>::value() {
-    return (Port::pin() & (1<<Pin)) == 0;
+bool inv_pin<Port, Pin>::value() {
+    return (Port::pin() & (1 << Pin)) == 0;
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::output( bool value ) {
-    if ( value ) {
-        Port::dir(Port::dir() | (1<<Pin));
+void inv_pin<Port, Pin>::output(bool value) {
+    if (value) {
+        Port::dir(Port::dir() | (1 << Pin));
     }
     else {
-        Port::dir(Port::dir() & ~(1<<Pin));
+        Port::dir(Port::dir() & ~(1 << Pin));
     }
 }
 
 template <typename Port, int Pin>
-bool inv_pin<Port,Pin>::output() {
-    return (Port::dir() & (1<<Pin)) != 0;
+bool inv_pin<Port, Pin>::output() {
+    return (Port::dir() & (1 << Pin)) != 0;
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::make_output() {
-    output( true );
+void inv_pin<Port, Pin>::make_output() {
+    output(true);
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::make_input() {
-    output( false );
+void inv_pin<Port, Pin>::make_input() {
+    output(false);
     clear();
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::make_low() {
+void inv_pin<Port, Pin>::make_low() {
     clear();
-    output( true );
+    output(true);
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::make_high() {
+void inv_pin<Port, Pin>::make_high() {
     set();
-    output( true );
+    output(true);
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::set_value( bool value ) {
-    set( value );
+void inv_pin<Port, Pin>::set_value(bool value) {
+    set(value);
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::set_high() {
-    set( true );
+void inv_pin<Port, Pin>::set_high() {
+    set(true);
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::set_low() {
-    set( false );
+void inv_pin<Port, Pin>::set_low() {
+    set(false);
 }
 
 template <typename Port, int Pin>
-bool inv_pin<Port,Pin>::read() {
+bool inv_pin<Port, Pin>::read() {
     return value();
 }
 
 template <typename Port, int Pin>
-void inv_pin<Port,Pin>::pullup() {
+void inv_pin<Port, Pin>::pullup() {
     set_low();
 }
+

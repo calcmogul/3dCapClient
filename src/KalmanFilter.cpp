@@ -1,24 +1,23 @@
-//=============================================================================
-//File Name: KalmanFilter.cpp
-//Description: Implements a Kalman filter for single input filtering
-//Author: Tyler Veness
-//=============================================================================
+// =============================================================================
+// File Name: KalmanFilter.cpp
+// Description: Implements a Kalman filter for single input filtering
+// Author: Tyler Veness
+// =============================================================================
 
 #include "KalmanFilter.hpp"
 
-KalmanFilter::KalmanFilter( double Q , double R ) :
-    m_Q( Q ),
-    m_R( R )
-{
+KalmanFilter::KalmanFilter(double Q, double R) :
+    m_Q(Q),
+    m_R(R) {
     reset();
 }
 
-void KalmanFilter::update( double input ) {
+void KalmanFilter::update(double input) {
     // Get the current dt since the last call to update()
     m_dt = m_time.getElapsedTime().asSeconds();
 
     // Initialize estimate to measured value
-    if ( m_firstRun ) {
+    if (m_firstRun) {
         m_stateEstimate = input;
 
         m_firstRun = false;
@@ -42,7 +41,7 @@ void KalmanFilter::update( double input ) {
     m_P -= K * m_P;
 
     // Test for NaN (all comparisons with NaN will be false)
-    if ( ( !(m_stateEstimate > 0.0) ) && ( !(m_stateEstimate < 0.0) ) ) {
+    if ((!(m_stateEstimate > 0.0)) && (!(m_stateEstimate < 0.0))) {
         m_stateEstimate = 0.0;
     }
 
@@ -50,11 +49,11 @@ void KalmanFilter::update( double input ) {
     m_time.restart();
 }
 
-void KalmanFilter::setQ( double Q ) {
+void KalmanFilter::setQ(double Q) {
     m_Q = Q;
 }
 
-void KalmanFilter::setR( double R ) {
+void KalmanFilter::setR(double R) {
     m_R = R;
 }
 
@@ -64,3 +63,4 @@ void KalmanFilter::reset() {
 
     FilterBase::reset();
 }
+

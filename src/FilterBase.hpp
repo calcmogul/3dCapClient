@@ -1,8 +1,8 @@
-//=============================================================================
-//File Name: FilterBase.hpp
-//Description: Provides an interface for filter classes
-//Author: Tyler Veness
-//=============================================================================
+// =============================================================================
+// File Name: FilterBase.hpp
+// Description: Provides an interface for filter classes
+// Author: Tyler Veness
+// =============================================================================
 
 #ifndef FILTER_BASE_HPP
 #define FILTER_BASE_HPP
@@ -14,7 +14,7 @@ public:
     FilterBase();
     virtual ~FilterBase();
 
-    virtual void update( double input ) = 0;
+    virtual void update(double input) = 0;
     virtual void reset();
 
     // Return the filtered value
@@ -31,3 +31,4 @@ protected:
 };
 
 #endif // FILTER_BASE_HPP
+

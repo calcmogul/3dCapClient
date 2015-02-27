@@ -1,9 +1,9 @@
-//=============================================================================
-//File Name: SerialPort.hpp
-//Description: Provides an interface for communicating with an Arduino via the
+// =============================================================================
+// File Name: SerialPort.hpp
+// Description: Provides an interface for communicating with an Arduino via the
 //             serial port
-//Author: Tyler Veness
-//=============================================================================
+// Author: Tyler Veness
+// =============================================================================
 
 #ifndef SERIAL_PORT_HPP
 #define SERIAL_PORT_HPP
@@ -18,7 +18,7 @@
 class SerialPort {
 public:
     // Initialize SerialPort communication with the given COM port
-    SerialPort( std::string portName = "" );
+    SerialPort(std::string portName = "");
 
     /* Close the connection
      * NOTE: for some reason you can't connect again before exiting the program
@@ -30,7 +30,7 @@ public:
      * passed as an argument, the previously assigned name will be used. This
      * should be done in the case of a reconnection attempt.
      */
-    void connect( std::string portName = "" );
+    void connect(std::string portName = "");
 
     /* Close the connection
      * NOTE: for some reason you can't connect again before exiting the program
@@ -42,12 +42,12 @@ public:
      * bytes available, it will return only the bytes available. The function
      * return -1 when nothing could be read, the number of bytes actually read.
      */
-    int read( char* buffer , unsigned int nbChar );
+    int read(char* buffer, unsigned int nbChar);
 
     /* Writes data from a buffer through the SerialPort connection. Returns
      * true on success; returns false on failure.
      */
-    bool write( char* buffer , unsigned int nbChar );
+    bool write(char* buffer, unsigned int nbChar);
 
     // Check if we are actually connected
     bool isConnected() const;
@@ -79,3 +79,4 @@ private:
 };
 
 #endif // SERIAL_PORT_HPP
+
