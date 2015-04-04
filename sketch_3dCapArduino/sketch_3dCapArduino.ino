@@ -204,7 +204,60 @@ long chargeTime(int pin) {
             "nop\n\t"
             "nop\n\t"
 
-            // 65
+            // 70
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            // 80
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            // 90
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            // 100
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+
+            // 110
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
+            "nop\n\t"
             "nop\n\t"
             "nop\n\t"
             "nop\n\t"
@@ -214,87 +267,6 @@ long chargeTime(int pin) {
 
         // Set pin to INPUT
         DDRA &= ~mask;
-
-        asm volatile (
-            // 10
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-
-            // 20
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-
-            // 30
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-
-            // 40
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-
-            // 50
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-
-            // 60
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-
-            // 65
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            "nop\n\t"
-            );
 
         // Count until pin switches state (until capacitor charges)
         while ((PINA & mask) == 0) {
