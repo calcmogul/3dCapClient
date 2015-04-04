@@ -19,8 +19,6 @@
 #include <sys/stat.h>
 #endif
 
-const unsigned int SerialPort::m_waitTime = 2000;
-
 SerialPort::SerialPort(std::string portName) {
     m_portName = portName;
 
@@ -52,10 +50,10 @@ void SerialPort::connect(std::string portName) {
     hSerial = CreateFile(portName.c_str(),
                          GENERIC_READ | GENERIC_WRITE,
                          0,
-                         NULL,
+                         nullptr,
                          OPEN_EXISTING,
                          FILE_ATTRIBUTE_NORMAL,
-                         NULL);
+                         nullptr);
 #else
     m_fd = open(portName.c_str(), O_RDONLY | O_NOCTTY | O_NDELAY);
 #endif
@@ -129,18 +127,6 @@ void SerialPort::connect(std::string portName) {
 #endif
 
     m_connected = true;
-
-#if 0
-    // We wait as the Arduino board will be reseting
-#ifdef _WIN32
-    Sleep(m_waitTime);
-#else
-    struct timespec sleepTime;
-    sleepTime.tv_sec = m_waitTime / 1000;
-    sleepTime.tv_nsec = (m_waitTime % 1000) * 1000000;
-    nanosleep(&sleepTime, NULL);
-#endif
-#endif
 }
 
 void SerialPort::disconnect() {
@@ -186,7 +172,7 @@ int SerialPort::read(char* buffer, unsigned int nbChar) {
         /* Try to read the require number of chars, and return the number of
          * read bytes on success
          */
-        if (ReadFile(hSerial, buffer, toRead, &bytesRead, NULL)) {
+        if (ReadFile(hSerial, buffer, toRead, &bytesRead, nullptr)) {
             return bytesRead;
         }
         else if (GetLastError() != ERROR_IO_PENDING) {
@@ -272,17 +258,17 @@ std::vector<std::string> SerialPort::getSerialPorts() {
     LONG res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, AdapterKey, 0, KEY_READ,
                             &hRegAdapters);
 
-    for (DWORD Index = 0;; Index++) {
+    for (DWORD Index = 0; res == ERROR_SUCCESS; Index++) {
         char SubKeyName[255];
         DWORD cName = 255;
-        LONG res = RegEnumKeyEx(hRegAdapters,
+        res = RegEnumKeyEx(hRegAdapters,
                                 Index,
                                 SubKeyName,
                                 &cName,
-                                NULL,
-                                NULL,
-                                NULL,
-                                NULL);
+                                nullptr,
+                                nullptr,
+                                nullptr,
+                                nullptr);
         if (res != ERROR_SUCCESS) {
             break;
         }
@@ -293,7 +279,7 @@ std::vector<std::string> SerialPort::getSerialPorts() {
     struct dirent* dir;
     d = opendir("/dev");
     if (d) {
-        while ((dir = readdir(d)) != NULL) {
+        while ((dir = readdir(d)) != nullptr) {
             if (dir->d_type == DT_CHR &&
                 (std::strncmp(dir->d_name, "ttyS", sizeof("ttyS") - 1) == 0 ||
                  std::strncmp(dir->d_name, "ttyACM",

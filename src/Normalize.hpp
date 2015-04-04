@@ -8,10 +8,10 @@
 #ifndef NORMALIZE_HPP
 #define NORMALIZE_HPP
 
+#include <cmath>
+
 class Normalize {
 public:
-    Normalize();
-
     /* Will replace either m_min or m_max with value if it is outside of the
      * range defined by m_min and m_max
      */
@@ -22,12 +22,11 @@ public:
     void reset();
 
 private:
-    float m_min;
-    float m_max;
+    float m_min{INFINITY};
+    float m_max{-INFINITY};
 
-    static const bool m_isLinear;
-    static const float m_minDistance;
-    static const float m_maxDistance;
+    static constexpr float m_minDistance{1.f};
+    static constexpr float m_maxDistance{5.f};
 };
 
 #endif // NORMALIZE_HPP

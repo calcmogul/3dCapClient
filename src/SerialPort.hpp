@@ -18,7 +18,7 @@
 class SerialPort {
 public:
     // Initialize SerialPort communication with the given COM port
-    SerialPort(std::string portName = "");
+    explicit SerialPort(std::string portName = "");
 
     /* Close the connection
      * NOTE: for some reason you can't connect again before exiting the program
@@ -73,9 +73,6 @@ private:
 
     // Connection status
     bool m_connected;
-
-    // Time to wait after intial Arduino connection in milliseconds
-    static const unsigned int m_waitTime;
 };
 
 #endif // SERIAL_PORT_HPP

@@ -6,15 +6,6 @@
 // =============================================================================
 
 #include "Normalize.hpp"
-#include <cmath>
-
-const bool Normalize::m_isLinear = true;
-const float Normalize::m_minDistance = 1.f;
-const float Normalize::m_maxDistance = 5.f;
-
-Normalize::Normalize() {
-    reset();
-}
 
 void Normalize::expandRange(float value) {
     if (value < m_min) {
@@ -52,6 +43,7 @@ float Normalize::linearize(float value) {
 
     float linear = sqrt(1 / normalized);
 
+    // Normalize inverse square value to [0..1] given a maximum distance range
     linear = (linear - m_minDistance) / (m_maxDistance - m_minDistance);
 
     if (linear < 0.f) {
