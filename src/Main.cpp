@@ -33,7 +33,25 @@ int main() {
     // x (left plate), y (bottom plate), z (right plate)
     std::vector<Normalize> n(sen);
     std::vector<WeightedAverageFilter> cama(sen, WeightedAverageFilter(0.04));
-    std::vector<KalmanFilter> axyz(sen, KalmanFilter(0.00006, 0.0001));
+    std::vector<KalmanFilter> axyz(sen, KalmanFilter(0.00004, 0.0001));
+
+    // xmin
+    n[0].expandRange(17970);
+
+    // xmax
+    n[0].expandRange(18150);
+
+    // ymin
+    n[1].expandRange(17390);
+
+    // ymax
+    n[1].expandRange(17660);
+
+    // zmin
+    n[2].expandRange(17415);
+
+    // zmax
+    n[2].expandRange(17660);
 
     bool haveValidData = false;
     bool calibrate = false;
@@ -214,7 +232,7 @@ int main() {
 
                         // Update camera and position filters
                         if (flip[i]) {
-                            // cama[i].update( 1 - raw );
+                            // cama[i].update(1 - raw);
                             axyz[i].update(1 - raw);
                         }
                         else {

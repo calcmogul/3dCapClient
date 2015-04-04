@@ -10,7 +10,7 @@
 
 const bool Normalize::m_isLinear = true;
 const float Normalize::m_minDistance = 1.f;
-const float Normalize::m_maxDistance = 4.f;
+const float Normalize::m_maxDistance = 5.f;
 
 Normalize::Normalize() {
     reset();
