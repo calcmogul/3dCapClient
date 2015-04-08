@@ -7,6 +7,8 @@
 #ifndef MATRIX_HPP
 #define MATRIX_HPP
 
+#include <memory>
+
 template <class T>
 class Matrix;
 
@@ -17,7 +19,6 @@ template <class T>
 class Matrix {
 public:
     Matrix(size_t height, size_t width, bool initAsIdent = false);
-    virtual ~Matrix();
 
     Matrix(T rhs);
     Matrix(const Matrix<T>& rhs);
@@ -90,12 +91,12 @@ public:
 
 private:
     // row-major matrix
-    T* m_matrix;
+    std::unique_ptr<T[]> m_matrix;
     size_t m_height;
     size_t m_width;
     bool m_isAugmented;
 
-    Matrix<T>* m_augment;
+    std::unique_ptr<Matrix<T>> m_augment;
 };
 
 namespace Mat {

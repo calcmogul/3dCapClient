@@ -14,7 +14,7 @@ Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
     m_height(height),
     m_width(width),
     m_isAugmented(false) {
-    m_matrix = new T[height * width];
+    m_matrix = std::make_unique<T[]>(height * width);
     m_augment = nullptr;
 
     if (initAsIdent) {
@@ -33,16 +33,8 @@ Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
 }
 
 template <class T>
-Matrix<T>::~Matrix() {
-    delete[] m_matrix;
-    if (m_isAugmented) {
-        delete[] m_augment;
-    }
-}
-
-template <class T>
 Matrix<T>::Matrix(T rhs) :
-    m_matrix(new T[1]),
+    m_matrix(std::make_unique<T[]>(1)),
     m_height(1),
     m_width(1),
     m_isAugmented(false) {
@@ -55,9 +47,9 @@ Matrix<T>::Matrix(const Matrix<T>& rhs) :
     m_height(rhs.height()),
     m_width(rhs.width()),
     m_isAugmented(false) {
-    m_matrix = new T[m_height * m_width];
+    m_matrix = std::make_unique<T[]>(m_height * m_width);
 
-    std::memcpy(m_matrix, rhs.m_matrix, m_height * m_width * sizeof(T));
+    std::memcpy(m_matrix.get(), rhs.m_matrix.get(), m_height * m_width * sizeof(T));
 }
 
 template <class T>
@@ -68,15 +60,14 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& rhs) {
             throw std::domain_error(
                       "Domain error: arguments have incompatible dimensions");
 #else
-            delete[] m_matrix;
-            m_matrix = new T[rhs.height() * rhs.width()];
+            m_matrix = std::make_unique<T[]>(rhs.height() * rhs.width());
 
             m_height = rhs.height();
             m_width = rhs.width();
 #endif
         }
 
-        std::memcpy(m_matrix, rhs.m_matrix, m_height * m_width * sizeof(T));
+        std::memcpy(m_matrix.get(), rhs.m_matrix.get(), m_height * m_width * sizeof(T));
     }
 
     return *this;
@@ -86,8 +77,7 @@ template <class T>
 Matrix<T>& Matrix<T>::operator=(Matrix<T>&& rhs) {
     assert(this != &rhs);
 
-    delete[] m_matrix;
-    m_matrix = rhs.m_matrix;
+    m_matrix = std::move(rhs.m_matrix);
     m_height = rhs.height();
     m_width = rhs.width();
     rhs.m_matrix = nullptr;
@@ -150,7 +140,7 @@ Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
     }
     else {
         Matrix<T> temp(height(), rhs.width());
-        std::memset(temp.m_matrix, 0, temp.height() * temp.width() * sizeof(T));
+        std::memset(temp.m_matrix.get(), 0, temp.height() * temp.width() * sizeof(T));
 
         for (uint32_t i = 0; i < height(); i++) {
             for (uint32_t j = 0; j < rhs.width(); j++) {
@@ -217,8 +207,7 @@ void Matrix<T>::augment(const Matrix<T>& mat) {
                   "Domain error: arguments have incompatible dimensions");
     }
 
-    delete[] m_augment;
-    m_augment = new Matrix<T>(mat.height(), mat.width());
+    m_augment = std::make_unique<Matrix<T>>(mat.height(), mat.width());
 
     *m_augment = mat;
 }
@@ -232,7 +221,6 @@ template <class T>
 void Matrix<T>::unaugment() {
     m_isAugmented = false;
 
-    delete[] m_augment;
     m_augment = nullptr;
 }
 
@@ -342,7 +330,7 @@ Matrix<T> Matrix<T>::rref() const {
 
 template <class T>
 T* Matrix<T>::data() const {
-    return m_matrix;
+    return m_matrix.get();
 }
 
 template <class T>
