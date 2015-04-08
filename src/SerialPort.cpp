@@ -262,13 +262,13 @@ std::vector<std::string> SerialPort::getSerialPorts() {
         char SubKeyName[255];
         DWORD cName = 255;
         res = RegEnumKeyEx(hRegAdapters,
-                                Index,
-                                SubKeyName,
-                                &cName,
-                                nullptr,
-                                nullptr,
-                                nullptr,
-                                nullptr);
+                           Index,
+                           SubKeyName,
+                           &cName,
+                           nullptr,
+                           nullptr,
+                           nullptr,
+                           nullptr);
         if (res != ERROR_SUCCESS) {
             break;
         }

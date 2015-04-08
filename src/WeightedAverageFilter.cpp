@@ -19,12 +19,12 @@ void WeightedAverageFilter::update(double input) {
     }
 
     // Get the current dt since the last call to update()
-    m_dt = m_time.getElapsedTime().asSeconds();
+    m_dt = std::chrono::system_clock::now() - m_lastTime;
 
-    m_stateEstimate = (m_stateEstimate * (1 - m_adapt * m_dt)) +
-                      (input * m_adapt * m_dt);
+    m_stateEstimate = (m_stateEstimate * (1 - m_adapt * m_dt.count())) +
+                      (input * m_adapt * m_dt.count());
 
     // Update the previous time for the next delta
-    m_time.restart();
+    m_lastTime = std::chrono::system_clock::now();
 }
 

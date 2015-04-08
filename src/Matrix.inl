@@ -8,6 +8,7 @@
 #include <cstring>
 #include <cassert>
 #include <stdexcept>
+#include <iostream>
 
 template <class T>
 Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
@@ -49,7 +50,8 @@ Matrix<T>::Matrix(const Matrix<T>& rhs) :
     m_isAugmented(false) {
     m_matrix = std::make_unique<T[]>(m_height * m_width);
 
-    std::memcpy(m_matrix.get(), rhs.m_matrix.get(), m_height * m_width * sizeof(T));
+    std::memcpy(m_matrix.get(), rhs.m_matrix.get(),
+                m_height * m_width * sizeof(T));
 }
 
 template <class T>
@@ -67,7 +69,8 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& rhs) {
 #endif
         }
 
-        std::memcpy(m_matrix.get(), rhs.m_matrix.get(), m_height * m_width * sizeof(T));
+        std::memcpy(m_matrix.get(),
+                    rhs.m_matrix.get(), m_height * m_width * sizeof(T));
     }
 
     return *this;
@@ -140,7 +143,8 @@ Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
     }
     else {
         Matrix<T> temp(height(), rhs.width());
-        std::memset(temp.m_matrix.get(), 0, temp.height() * temp.width() * sizeof(T));
+        std::memset(temp.m_matrix.get(), 0,
+                    temp.height() * temp.width() * sizeof(T));
 
         for (uint32_t i = 0; i < height(); i++) {
             for (uint32_t j = 0; j < rhs.width(); j++) {

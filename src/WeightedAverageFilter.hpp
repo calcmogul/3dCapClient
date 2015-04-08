@@ -14,7 +14,7 @@
 
 class WeightedAverageFilter : public FilterBase {
 public:
-    WeightedAverageFilter(float adapt);
+    explicit WeightedAverageFilter(float adapt);
 
     void update(double input);
 

@@ -10,13 +10,10 @@ FilterBase::FilterBase() {
     reset();
 }
 
-FilterBase::~FilterBase() {
-}
-
 void FilterBase::reset() {
     m_stateEstimate = 0.0;
-    m_dt = 0.0;
-    m_time.restart();
+    m_dt = 0.0s;
+    m_lastTime = std::chrono::system_clock::now();
 }
 
 double FilterBase::getEstimate() {

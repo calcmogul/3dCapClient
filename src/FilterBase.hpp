@@ -7,12 +7,13 @@
 #ifndef FILTER_BASE_HPP
 #define FILTER_BASE_HPP
 
-#include <SFML/System/Clock.hpp>
+#include <chrono>
+using namespace std::chrono_literals;
 
 class FilterBase {
 public:
     FilterBase();
-    virtual ~FilterBase();
+    virtual ~FilterBase() = default;
 
     virtual void update(double input) = 0;
     virtual void reset();
@@ -24,10 +25,10 @@ protected:
     double m_stateEstimate;
 
     // Holds dt in update()
-    double m_dt;
+    std::chrono::duration<double> m_dt;
 
     // Used to find dt in update()
-    sf::Clock m_time;
+    std::chrono::time_point<std::chrono::system_clock> m_lastTime;
 };
 
 #endif // FILTER_BASE_HPP
