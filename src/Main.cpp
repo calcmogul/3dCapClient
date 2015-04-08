@@ -26,14 +26,199 @@
 
 // #define USE_RAW_INPUT
 
-int main() {
-    const unsigned int sen = 3; // sensors
-    const unsigned int subDivs = 3; // board sub-divisions
+const unsigned int sen = 3; // sensors
+const unsigned int subDivs = 3; // board sub-divisions
 
-    // x (left plate), y (bottom plate), z (right plate)
-    std::vector<Normalize> n(sen);
-    std::vector<WeightedAverageFilter> cama(sen, WeightedAverageFilter(0.04));
-    std::vector<KalmanFilter> axyz(sen, KalmanFilter(0.00004, 0.0001));
+const float w = 256; // board size
+
+bool haveValidData{false};
+bool calibrate{false};
+
+// x (left plate), y (bottom plate), z (right plate)
+std::vector<Normalize> n(sen);
+std::vector<WeightedAverageFilter> cama(sen, WeightedAverageFilter(0.04));
+std::vector<KalmanFilter> axyz(sen, KalmanFilter(0.00004, 0.0001));
+unsigned char ixyz[sen];
+Matrix<GLfloat> rotationMat(4, 4, true);
+
+// 'isConnected' referrs to whether client's serial port is connected
+void renderCube(sf::Window* window, bool isConnected) {
+    window->setActive();
+
+    // Clear the buffers
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glPushMatrix();
+
+    // Draw connection indicator
+    glPushMatrix();
+
+    // Set up screen
+    glViewport(0, 0, window->getSize().x, window->getSize().y);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0, window->getSize().x, window->getSize().y, 0, 0, 1);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // Translate circle away from top left of window
+    glTranslatef(36.f, 36.f, 0.f);
+
+    if (isConnected) {
+        if (haveValidData) {
+            // Connected and valid data
+            glColor3ub(0, 200, 0);
+        }
+        else {
+            // Connected but no valid data
+            glColor3ub(255, 220, 0);
+        }
+    }
+    else {
+        // Disconnected
+        glColor3ub(200, 0, 0);
+    }
+
+    glDisable(GL_LIGHTING);
+    drawCircle(18.f, 32.f);
+    glEnable(GL_LIGHTING);
+
+    gluLookAt(
+            0.f, 0.f, w * 2,
+            0.f, 0.f, w / 2,
+            0, 1, 0);
+
+    glPopMatrix();
+
+    // Set up screen
+    glViewport(0, 0, window->getSize().x, window->getSize().y);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.f,
+                   static_cast<float>(window->getSize().x) / window->getSize().y,
+                   250.f,
+                   900.f);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    gluLookAt(
+        w / 2 + (cama[0].getEstimate() - cama[2].getEstimate()) * w / 2,
+        (w * 3 + (cama[1].getEstimate() - 1) * window->getSize().y / 2),
+        w * 2,
+        w / 2, w / 2, w / 2,
+        0, 1, 0);
+
+    /* The sensor's coordinate axes are oriented differently from OpenGL's
+     * axes, so rotate the view until they match. glTranslatef() is used to
+     * make rotation occur around center of cube. This translation is
+     * undone manually since pushing and popping a matrix would undo the
+     * rotation as well.
+     */
+    glTranslatef(w / 2, w / 2, w / 2);
+    glRotatef(180.f, 1.f, 0.f, 0.f);
+
+    glMultMatrixf(rotationMat.transpose().data()); // Rotate view with mouse
+    glTranslatef(-w / 2, -w / 2, -w / 2);
+
+    glPushMatrix();
+
+    // Draw outer boundary box
+    glColor4ub(0, 0, 0, 40);
+    glTranslatef(w / 2, w / 2, w / 2);
+    glRotatef(-45.f, 0.f, 1.f, 0.f);
+    drawBox(w, GL_LINE);
+
+    glPopMatrix();
+
+    float subDivWidth = w / subDivs;
+
+    glTranslatef(w / 2, subDivWidth / 2, 0);
+    glRotatef(-45.f, 0.f, 1.f, 0.f);
+
+    glPushMatrix();
+
+    /* Converts normalized average to position within cube
+     *   axyz * (subDivs - 1) * (w / subDivs)
+     * = axyz * (w - w / subDivs)
+     * = axyz * ( w - subDivWidth)
+     */
+    float posModifier = w - subDivWidth;
+
+#ifdef USE_RAW_INPUT
+    float raw[sen];
+    for (unsigned int i = 0; i < sen; i++) {
+        raw[i] = n[i].linearize(xyz[i]);
+
+        if (flip[i]) {
+            raw[i] = 1 - raw[i];
+        }
+    }
+
+    glTranslatef(
+        raw[0] * posModifier,
+        raw[1] * posModifier,
+        raw[2] * posModifier);
+#else
+    glTranslatef(
+        axyz[0].getEstimate() * posModifier,
+        axyz[1].getEstimate() * posModifier,
+        axyz[2].getEstimate() * posModifier);
+#endif
+
+    // Draw sphere for current position of hand
+    glColor4ub(255, 160, 0, 200);
+    GLUquadricObj* sphere = gluNewQuadric();
+    if (sphere != nullptr) {
+        gluQuadricNormals(sphere, GLU_SMOOTH);
+        gluSphere(sphere, 18, 32, 32);
+        gluDeleteQuadric(sphere);
+    }
+
+    glPopMatrix();
+
+    for (unsigned int z = 0; z < subDivs; z++) {
+        for (unsigned int y = 0; y < subDivs; y++) {
+            for (unsigned int x = 0; x < subDivs; x++) {
+                glPushMatrix();
+
+                glTranslatef(x * subDivWidth,
+                             y * subDivWidth,
+                             z * subDivWidth);
+
+                if (x == ixyz[0] &&
+                    y == ixyz[1] &&
+                    z == ixyz[2]) {
+                    // transparent red
+                    glColor4ub(255, 0, 0, 200);
+                }
+                else {
+                    // transparent gray
+                    glColor4ub(100, 100, 100, 100);
+                }
+                drawBox(subDivWidth / 3, GL_FILL);
+
+                glPopMatrix();
+            }
+        }
+    }
+
+    glPopMatrix();
+
+    window->display();
+}
+
+void renderColor(sf::Window* window) {
+    window->setActive();
+    glClearColor(axyz[0].getEstimate(),
+                 axyz[1].getEstimate(),
+                 axyz[2].getEstimate(),
+                 1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    window->display();
+}
+
+int main() {
+    const bool flip[sen] = { true, true, true };
 
     // xmin
     n[0].expandRange(17970);
@@ -53,15 +238,7 @@ int main() {
     // zmax
     n[2].expandRange(17660);
 
-    bool haveValidData = false;
-    bool calibrate = false;
-
     SerialPort serialPort;
-
-    unsigned char ixyz[sen];
-
-    float w = 256; // board size
-    bool flip[sen] = { true, true, true };
 
 #ifdef USE_RAW_INPUT
     float xyz[sen];
@@ -75,14 +252,16 @@ int main() {
     settings.minorVersion = 0;
 
     // Setup
-//    sf::Window mainWin( sf::VideoMode() , "3D Capacitor Demo" ,
-//            sf::Style::Titlebar | sf::Style::Fullscreen , settings );
-    sf::Window mainWin(sf::VideoMode(800, 600), "3D Capacitor Demo",
-                       sf::Style::Titlebar | sf::Style::Close, settings);
+    sf::Window mainWin(sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Cube",
+                       sf::Style::Resize | sf::Style::Close, settings);
     mainWin.setFramerateLimit(25);
+    sf::Window mainWin2(sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Color",
+                        sf::Style::Resize | sf::Style::Close, settings);
+    mainWin2.setFramerateLimit(25);
+
+    mainWin.setActive();
 
     sf::Vector2i lastMousePos = sf::Mouse::getPosition(mainWin);
-    Matrix<GLfloat> rotationMat(4, 4, true);
 
     // Set buffer clear values
     glClearColor(1.f, 1.f, 1.f, 1.f);
@@ -130,13 +309,22 @@ int main() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
+    mainWin2.setActive();
+    glClearColor(1.f, 1.f, 1.f, 1.f);
+    glClearDepth(1.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glViewport(0, 0, mainWin2.getSize().x, mainWin2.getSize().y);
+
+    mainWin.setActive(false);
+    mainWin2.setActive(false);
+
     // Used to store data read from serialPort port
     std::string serialPortData;
     char curChar = '\0';
     char numRead = 0;
 
     sf::Event event;
-    while (mainWin.isOpen()) {
+    while (mainWin.isOpen() && mainWin2.isOpen()) {
         while (mainWin.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 mainWin.close();
@@ -186,9 +374,15 @@ int main() {
             }
         }
 
+        while (mainWin2.pollEvent(event)) {
+            if (event.type == sf::Event::Closed) {
+                mainWin2.close();
+            }
+        }
+
         // Attempt a connection
         if (!serialPort.isConnected()) {
-            std::vector<std::string> && ports = SerialPort::getSerialPorts();
+            std::vector<std::string> ports = SerialPort::getSerialPorts();
             if (ports.size() > 0) {
                 serialPort.connect(ports[0]);
             }
@@ -236,7 +430,7 @@ int main() {
                             axyz[i].update(1 - raw);
                         }
                         else {
-                            // cama[i].update( raw );
+                            // cama[i].update(raw);
                             axyz[i].update(raw);
                         }
 
@@ -261,151 +455,8 @@ int main() {
             }
         }
 
-        // Clear the buffers
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        glPushMatrix();
-
-        // Draw connection indicator
-        glPushMatrix();
-
-        gluLookAt(
-            0.f, 0.f, w * 2,
-            0.f, 0.f, w / 2,
-            0, 1, 0);
-
-        glTranslatef(
-            36.f - mainWin.getSize().x / 2.f,
-            -36.f + mainWin.getSize().y / 2.f,
-            0.f);
-
-        if (serialPort.isConnected()) {
-            if (haveValidData) {
-                // Connected and valid data
-                glColor3ub(0, 200, 0);
-            }
-            else {
-                // Connected but no valid data
-                glColor3ub(255, 220, 0);
-            }
-        }
-        else {
-            // Disconnected
-            glColor3ub(200, 0, 0);
-        }
-
-        // glShadeModel( GL_FLAT );
-        glDisable(GL_LIGHTING);
-        drawCircle(18.f, 32.f);
-        glEnable(GL_LIGHTING);
-        // glShadeModel( GL_SMOOTH );
-
-        glPopMatrix();
-
-        gluLookAt(
-            w / 2 + (cama[0].getEstimate() - cama[2].getEstimate()) * w / 2,
-            (w * 3 + (cama[1].getEstimate() - 1) * mainWin.getSize().y / 2),
-            w * 2,
-            w / 2, w / 2, w / 2,
-            0, 1, 0);
-
-        /* The sensor's coordinate axes are oriented differently from OpenGL's
-         * axes, so rotate the view until they match. glTranslatef() is used to
-         * make rotation occur around center of cube. This translation is
-         * undone manually since pushing and popping a matrix would undo the
-         * rotation as well.
-         */
-        glTranslatef(w / 2, w / 2, w / 2);
-        glRotatef(180.f, 1.f, 0.f, 0.f);
-
-        glMultMatrixf(rotationMat.transpose().data()); // Rotate view with mouse
-        glTranslatef(-w / 2, -w / 2, -w / 2);
-
-        glPushMatrix();
-
-        // Draw outer boundary box
-        glColor4ub(0, 0, 0, 40);
-        glTranslatef(w / 2, w / 2, w / 2);
-        glRotatef(-45.f, 0.f, 1.f, 0.f);
-        drawBox(w, GL_LINE);
-
-        glPopMatrix();
-
-        float subDivWidth = w / subDivs;
-
-        glTranslatef(w / 2, subDivWidth / 2, 0);
-        glRotatef(-45.f, 0.f, 1.f, 0.f);
-
-        glPushMatrix();
-
-        /* Converts normalized average to position within cube
-         *   axyz * (subDivs - 1) * (w / subDivs)
-         * = axyz * (w - w / subDivs)
-         * = axyz * ( w - subDivWidth)
-         */
-        float posModifier = w - subDivWidth;
-
-#ifdef USE_RAW_INPUT
-        float raw[sen];
-        for (unsigned int i = 0; i < sen; i++) {
-            raw[i] = n[i].linearize(xyz[i]);
-
-            if (flip[i]) {
-                raw[i] = 1 - raw[i];
-            }
-        }
-
-        glTranslatef(
-            raw[0] * posModifier,
-            raw[1] * posModifier,
-            raw[2] * posModifier);
-#else
-        glTranslatef(
-            axyz[0].getEstimate() * posModifier,
-            axyz[1].getEstimate() * posModifier,
-            axyz[2].getEstimate() * posModifier);
-#endif
-
-        // Draw sphere for current position of hand
-        glColor4ub(255, 160, 0, 200);
-        GLUquadricObj* sphere = gluNewQuadric();
-        if (sphere != NULL) {
-            gluQuadricNormals(sphere, GLU_SMOOTH);
-            gluSphere(sphere, 18, 32, 32);
-            gluDeleteQuadric(sphere);
-        }
-
-        glPopMatrix();
-
-        for (unsigned int z = 0; z < subDivs; z++) {
-            for (unsigned int y = 0; y < subDivs; y++) {
-                for (unsigned int x = 0; x < subDivs; x++) {
-                    glPushMatrix();
-
-                    glTranslatef(x * subDivWidth,
-                                 y * subDivWidth,
-                                 z * subDivWidth);
-
-                    if (x == ixyz[0] &&
-                        y == ixyz[1] &&
-                        z == ixyz[2]) {
-                        // transparent red
-                        glColor4ub(255, 0, 0, 200);
-                    }
-                    else {
-                        // transparent gray
-                        glColor4ub(100, 100, 100, 100);
-                    }
-                    drawBox(subDivWidth / 3, GL_FILL);
-
-                    glPopMatrix();
-                }
-            }
-        }
-
-        glPopMatrix();
-
-        mainWin.display();
+        renderCube(&mainWin, serialPort.isConnected());
+        renderColor(&mainWin2);
     }
 
     return 0;
