@@ -115,6 +115,12 @@ int main() {
                          event.key.code == sf::Keyboard::RShift) {
                     renderData.useRawInput = !renderData.useRawInput;
                 }
+                else if (event.key.code == sf::Keyboard::LControl ||
+                         event.key.code == sf::Keyboard::RControl) {
+                    for (auto& obj : renderData.camera) {
+                        obj.reset();
+                    }
+                }
             }
             else if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Right) {
