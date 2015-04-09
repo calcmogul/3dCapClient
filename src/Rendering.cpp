@@ -124,26 +124,18 @@ void renderCube(sf::Window* window, RenderData& data) {
      */
     float posModifier = w - subDivWidth;
 
-#ifdef USE_RAW_INPUT
-    float raw[sen];
-    for (unsigned int i = 0; i < sen; i++) {
-        raw[i] = n[i].linearize(xyz[i]);
-
-        if (flip[i]) {
-            raw[i] = 1 - raw[i];
-        }
+    if (data.useRawInput) {
+        glTranslatef(
+            data.rawPos[0] * posModifier,
+            data.rawPos[1] * posModifier,
+            data.rawPos[2] * posModifier);
     }
-
-    glTranslatef(
-        raw[0] * posModifier,
-        raw[1] * posModifier,
-        raw[2] * posModifier);
-#else
-    glTranslatef(
-        data.avgPos[0].getEstimate() * posModifier,
-        data.avgPos[1].getEstimate() * posModifier,
-        data.avgPos[2].getEstimate() * posModifier);
-#endif
+    else {
+        glTranslatef(
+            data.avgPos[0].getEstimate() * posModifier,
+            data.avgPos[1].getEstimate() * posModifier,
+            data.avgPos[2].getEstimate() * posModifier);
+    }
 
     // Draw sphere for current position of hand
     glColor4ub(255, 160, 0, 200);
@@ -191,17 +183,24 @@ void renderCube(sf::Window* window, RenderData& data) {
     window->display();
 }
 
-// 'isConnected' refers to whether client's serial port is connected
 void renderColor(sf::Window* window, RenderData& data) {
     window->setActive();
 
     // Set up window
     glViewport(0, 0, window->getSize().x, window->getSize().y);
 
-    glClearColor(data.avgPos[0].getEstimate(),
-                 data.avgPos[1].getEstimate(),
-                 data.avgPos[2].getEstimate(),
-                 1.f);
+    if (data.useRawInput) {
+        glClearColor(data.rawPos[0],
+                     data.rawPos[1],
+                     data.rawPos[2],
+                     1.f);
+    }
+    else {
+        glClearColor(data.avgPos[0].getEstimate(),
+                     data.avgPos[1].getEstimate(),
+                     data.avgPos[2].getEstimate(),
+                     1.f);
+    }
     glClear(GL_COLOR_BUFFER_BIT);
 
     renderConnectionIndicator(window, data);

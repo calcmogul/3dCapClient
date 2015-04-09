@@ -25,42 +25,16 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-// #define USE_RAW_INPUT
-
-float lastxyz[sen] {0.f, 0.f, 0.f};
+float lastPos[sen] {0.f, 0.f, 0.f};
 
 // x (left plate), y (bottom plate), z (right plate)
-std::vector<Normalize> normalizer(sen);
 
 int main() {
     RenderData renderData;
+    std::vector<Normalize> normalizer(sen);
     const bool flip[sen] = { true, true, true };
 
-#if 0
-    // xmin
-    normalizer[0].expandRange(17970);
-
-    // xmax
-    normalizer[0].expandRange(18150);
-
-    // ymin
-    normalizer[1].expandRange(17390);
-
-    // ymax
-    normalizer[1].expandRange(17660);
-
-    // zmin
-    normalizer[2].expandRange(17415);
-
-    // zmax
-    normalizer[2].expandRange(17660);
-#endif
-
     SerialPort serialPort;
-
-#ifdef USE_RAW_INPUT
-    float xyz[sen];
-#endif
 
     sf::ContextSettings settings;
     settings.depthBits = 32;
@@ -137,17 +111,19 @@ int main() {
                 if (event.key.code == sf::Keyboard::Escape) {
                     mainWin.close();
                 }
+                else if (event.key.code == sf::Keyboard::LShift ||
+                         event.key.code == sf::Keyboard::RShift) {
+                    renderData.useRawInput = !renderData.useRawInput;
+                }
             }
             else if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Right) {
-#if 1
                     // Reset filters
                     for (unsigned int i = 0; i < sen; i++) {
                         normalizer[i].reset();
                         renderData.camera[i].reset();
                         renderData.avgPos[i].reset();
                     }
-#endif
 
                     renderData.rotationMat = Mat::createIdentity<GLfloat>(
                         renderData.rotationMat.height(),
@@ -205,36 +181,35 @@ int main() {
                 std::vector<std::string> parts = split(serialPortData, " ");
 
                 if (parts.size() == sen) {
-#ifndef USE_RAW_INPUT
-                    float xyz[sen];
-#endif
                     float raw;
 
                     renderData.haveValidData = true;
 
                     for (unsigned int i = 0; i < sen; i++) {
-                        xyz[i] = std::atof(parts[i].c_str());
+                        raw = std::atof(parts[i].c_str());
 
                         std::cout << "diff[" << i << "]=" << std::fabs(
-                            xyz[i] - lastxyz[i]) << "\n";
+                            raw - lastPos[i]) << "\n";
 
-                        if (std::fabs(xyz[i] - lastxyz[i]) < 450 ||
-                            lastxyz[i] < 15000) {
-                            normalizer[i].expandRange(xyz[i]);
-                            lastxyz[i] = xyz[i];
+                        if (std::fabs(raw - lastPos[i]) < 450 ||
+                            lastPos[i] < 15000) {
+                            normalizer[i].expandRange(raw);
+                            lastPos[i] = raw;
                             std::cout << "defining boundaries\n";
                         }
 
-                        raw = normalizer[i].linearize(xyz[i]);
+                        raw = normalizer[i].linearize(raw);
 
                         // Update camera and position filters
                         if (flip[i]) {
                             // camera[i].update(1 - raw);
                             renderData.avgPos[i].update(1 - raw);
+                            renderData.rawPos[i] = 1 - raw;
                         }
                         else {
                             // camera[i].update(raw);
                             renderData.avgPos[i].update(raw);
+                            renderData.rawPos[i] = raw;
                         }
                     }
                 }

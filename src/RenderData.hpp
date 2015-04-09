@@ -21,6 +21,9 @@ struct RenderData {
     bool isConnected{false};
     bool haveValidData{false};
     Matrix<GLfloat> rotationMat{4, 4, true};
+
+    std::vector<float> rawPos{sen, 0.f};
+    bool useRawInput{false};
 };
 
 #endif // RENDER_DATA_HPP
