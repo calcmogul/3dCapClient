@@ -202,12 +202,12 @@ int main() {
 
                         // Update camera and position filters
                         if (flip[i]) {
-                            // camera[i].update(1 - raw);
+                            renderData.camera[i].update(1 - raw);
                             renderData.avgPos[i].update(1 - raw);
                             renderData.rawPos[i] = 1 - raw;
                         }
                         else {
-                            // camera[i].update(raw);
+                            renderData.camera[i].update(raw);
                             renderData.avgPos[i].update(raw);
                             renderData.rawPos[i] = raw;
                         }
