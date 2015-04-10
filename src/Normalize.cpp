@@ -17,6 +17,16 @@ void Normalize::expandRange(float value) {
     }
 }
 
+void Normalize::setMinimum(float value) {
+    m_min = value;
+}
+
+void Normalize::expandMaximum(float value) {
+    if (value > m_max) {
+        m_max = value;
+    }
+}
+
 float Normalize::normalize(float value) {
     if (m_min == m_max || m_min == INFINITY) {
         return 0.f;

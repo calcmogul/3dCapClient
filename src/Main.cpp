@@ -26,6 +26,7 @@
 #include <SFML/Window/Mouse.hpp>
 
 float lastPos[sen] {0.f, 0.f, 0.f};
+float rawInput[sen] {0.f, 0.f, 0.f};
 
 // x (left plate), y (bottom plate), z (right plate)
 
@@ -108,8 +109,12 @@ int main() {
                 mainWin.close();
             }
             else if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Escape) {
-                    mainWin.close();
+                if (event.key.code == sf::Keyboard::Space) {
+                    if (renderData.haveValidData) {
+                        for (unsigned int i = 0; i < sen; i++) {
+                            normalizer[i].setMinimum(rawInput[i]);
+                        }
+                    }
                 }
                 else if (event.key.code == sf::Keyboard::LShift ||
                          event.key.code == sf::Keyboard::RShift) {
@@ -187,24 +192,22 @@ int main() {
                 std::vector<std::string> parts = split(serialPortData, " ");
 
                 if (parts.size() == sen) {
-                    float raw;
-
                     renderData.haveValidData = true;
 
                     for (unsigned int i = 0; i < sen; i++) {
-                        raw = std::atof(parts[i].c_str());
+                        rawInput[i] = std::atof(parts[i].c_str());
 
                         std::cout << "diff[" << i << "]=" << std::fabs(
-                            raw - lastPos[i]) << "\n";
+                            rawInput[i] - lastPos[i]) << "\n";
 
-                        if (std::fabs(raw - lastPos[i]) < 450 ||
+                        if (std::fabs(rawInput[i] - lastPos[i]) < 450 ||
                             lastPos[i] < 15000) {
-                            normalizer[i].expandRange(raw);
-                            lastPos[i] = raw;
+                            normalizer[i].expandMaximum(rawInput[i]);
+                            lastPos[i] = rawInput[i];
                             std::cout << "defining boundaries\n";
                         }
 
-                        raw = normalizer[i].linearize(raw);
+                        float raw = normalizer[i].linearize(rawInput[i]);
 
                         // Update camera and position filters
                         if (flip[i]) {

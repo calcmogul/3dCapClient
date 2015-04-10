@@ -17,6 +17,9 @@ public:
      */
     void expandRange(float value);
 
+    void setMinimum(float value);
+    void expandMaximum(float value);
+
     float normalize(float value);
     float linearize(float value);
     void reset();
