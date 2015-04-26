@@ -9,8 +9,9 @@
 #include "GLUtils.hpp"
 
 #include <SFML/OpenGL.hpp>
+#include <SFML/Graphics/Text.hpp>
 
-void renderConnectionIndicator(sf::Window* window, RenderData& data) {
+void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
     // Save projection matrix
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -56,7 +57,7 @@ void renderConnectionIndicator(sf::Window* window, RenderData& data) {
     glPopMatrix();
 }
 
-void renderCube(sf::Window* window, RenderData& data) {
+void renderCube(sf::RenderWindow* window, RenderData& data) {
     window->setActive();
 
     // Set up window
@@ -180,10 +181,41 @@ void renderCube(sf::Window* window, RenderData& data) {
         }
     }
 
+    window->pushGLStates();
+
+    sf::Text text("", data.font, 12);
+    text.setColor(sf::Color::Black);
+
+    text.setString("raw x: " + std::to_string(data.rawPos[0]));
+    text.setPosition(18, 68);
+    window->draw(text);
+
+    text.setString("raw y: " + std::to_string(data.rawPos[1]));
+    text.setPosition(18, text.getPosition().y + 12);
+    window->draw(text);
+
+    text.setString("raw z: " + std::to_string(data.rawPos[2]));
+    text.setPosition(18, text.getPosition().y + 12);
+    window->draw(text);
+
+    text.setString("avg x: " + std::to_string(data.avgPos[0].getEstimate()));
+    text.setPosition(18, text.getPosition().y + 24);
+    window->draw(text);
+
+    text.setString("avg y: " + std::to_string(data.avgPos[1].getEstimate()));
+    text.setPosition(18, text.getPosition().y + 12);
+    window->draw(text);
+
+    text.setString("avg z: " + std::to_string(data.avgPos[2].getEstimate()));
+    text.setPosition(18, text.getPosition().y + 12);
+    window->draw(text);
+
+    window->popGLStates();
+
     window->display();
 }
 
-void renderColor(sf::Window* window, RenderData& data) {
+void renderColor(sf::RenderWindow* window, RenderData& data) {
     window->setActive();
 
     // Set up window

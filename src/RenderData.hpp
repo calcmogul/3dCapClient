@@ -12,11 +12,15 @@
 #include "WeightedAverageFilter.hpp"
 #include "Matrix.hpp"
 #include <SFML/OpenGL.hpp>
+#include <SFML/Graphics/Font.hpp>
 
 const unsigned int sen = 3; // sensors
 
-struct RenderData {
-    std::vector<KalmanFilter> avgPos{sen, KalmanFilter(0.00004, 0.0001)};
+class RenderData {
+public:
+    RenderData();
+
+    std::vector<KalmanFilter> avgPos{sen, KalmanFilter(0.00004, 0.0004)};
     std::vector<WeightedAverageFilter> camera{sen, WeightedAverageFilter(0.04)};
     bool isConnected{false};
     bool haveValidData{false};
@@ -24,6 +28,8 @@ struct RenderData {
 
     std::vector<float> rawPos{sen, 0.f};
     bool useRawInput{false};
+
+    sf::Font font;
 };
 
 #endif // RENDER_DATA_HPP

@@ -20,7 +20,7 @@
 #include "Util.hpp"
 #include "Matrix.hpp"
 
-#include <SFML/Window/Window.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
@@ -45,11 +45,11 @@ int main() {
     settings.minorVersion = 0;
 
     // Setup
-    sf::Window mainWin(
+    sf::RenderWindow mainWin(
         sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Cube",
         sf::Style::Resize | sf::Style::Close, settings);
     mainWin.setFramerateLimit(25);
-    sf::Window mainWin2(
+    sf::RenderWindow mainWin2(
         sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Color",
         sf::Style::Resize | sf::Style::Close, settings);
     mainWin2.setFramerateLimit(25);
@@ -200,23 +200,22 @@ int main() {
                         std::cout << "diff[" << i << "]=" << std::fabs(
                             rawInput[i] - lastPos[i]) << "\n";
 
-                        if (std::fabs(rawInput[i] - lastPos[i]) < 450 ||
+                        if (std::fabs(rawInput[i] - lastPos[i]) < 350 ||
                             lastPos[i] < 15000) {
                             normalizer[i].expandMaximum(rawInput[i]);
                             lastPos[i] = rawInput[i];
-                            std::cout << "defining boundaries\n";
                         }
 
                         float raw = normalizer[i].linearize(rawInput[i]);
 
                         // Update camera and position filters
                         if (flip[i]) {
-                            renderData.camera[i].update(1 - raw);
+                            //renderData.camera[i].update(1 - raw);
                             renderData.avgPos[i].update(1 - raw);
                             renderData.rawPos[i] = 1 - raw;
                         }
                         else {
-                            renderData.camera[i].update(raw);
+                            //renderData.camera[i].update(raw);
                             renderData.avgPos[i].update(raw);
                             renderData.rawPos[i] = raw;
                         }

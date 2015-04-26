@@ -8,18 +8,18 @@
 #ifndef RENDERING_HPP
 #define RENDERING_HPP
 
-#include <SFML/Window/Window.hpp>
+#include <SFML/Graphics/RenderWindow.hpp>
 #include <vector>
 #include "RenderData.hpp"
 
 const unsigned int subDivs = 3; // board sub-divisions
 const float w = 256; // board size
 
-void renderConnectionIndicator(sf::Window* window, RenderData& data);
+void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data);
 
-void renderCube(sf::Window* window, RenderData& data);
+void renderCube(sf::RenderWindow* window, RenderData& data);
 
-void renderColor(sf::Window* window, RenderData& data);
+void renderColor(sf::RenderWindow* window, RenderData& data);
 
 #endif // RENDERING_HPP
 

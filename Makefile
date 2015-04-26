@@ -41,7 +41,7 @@ ifeq ($(OS), Windows_NT)
 	EXEC := $(NAME).exe
 else
         # Specify Linux libs with -l directives here
-	LDFLAGS := -lsfml-window -lsfml-system -lGL -lGLU
+	LDFLAGS := -lsfml-graphics -lsfml-window -lsfml-system -lGL -lGLU
 
 ifeq ($(strip $(PREFIX)),)
         # Assign executable name
