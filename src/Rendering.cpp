@@ -9,6 +9,7 @@
 #include "GLUtils.hpp"
 
 #include <SFML/OpenGL.hpp>
+#include <GL/glu.h>
 #include <SFML/Graphics/Text.hpp>
 
 void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
