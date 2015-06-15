@@ -14,10 +14,8 @@
 template <class T>
 Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
     m_height(height),
-    m_width(width),
-    m_isAugmented(false) {
+    m_width(width) {
     m_matrix = std::make_unique<T[]>(height * width);
-    m_augment = nullptr;
 
     if (initAsIdent) {
         // Create identity matrix
@@ -38,17 +36,14 @@ template <class T>
 Matrix<T>::Matrix(T rhs) :
     m_matrix(std::make_unique<T[]>(1)),
     m_height(1),
-    m_width(1),
-    m_isAugmented(false) {
+    m_width(1) {
     m_matrix[0] = rhs;
-    m_augment = nullptr;
 }
 
 template <class T>
 Matrix<T>::Matrix(const Matrix<T>& rhs) :
     m_height(rhs.height()),
-    m_width(rhs.width()),
-    m_isAugmented(false) {
+    m_width(rhs.width()) {
     m_matrix = std::make_unique<T[]>(m_height * m_width);
 
     std::memcpy(m_matrix.get(), rhs.m_matrix.get(),

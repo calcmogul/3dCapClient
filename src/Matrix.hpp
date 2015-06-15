@@ -94,9 +94,9 @@ private:
     std::unique_ptr<T[]> m_matrix;
     size_t m_height;
     size_t m_width;
-    bool m_isAugmented;
+    bool m_isAugmented{false};
 
-    std::unique_ptr<Matrix<T>> m_augment;
+    std::unique_ptr<Matrix<T>> m_augment{nullptr};
 };
 
 namespace Mat {
