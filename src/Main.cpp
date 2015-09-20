@@ -38,8 +38,8 @@ int main() {
     SerialPort serialPort;
 
     sf::ContextSettings settings;
-    settings.depthBits = 32;
-    settings.stencilBits = 0;
+    settings.depthBits = 24;
+    settings.stencilBits = 8;
     settings.antialiasingLevel = 4;
     settings.majorVersion = 3;
     settings.minorVersion = 0;
