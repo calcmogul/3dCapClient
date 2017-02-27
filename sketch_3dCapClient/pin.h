@@ -1,3 +1,5 @@
+// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+
 #ifndef PIN_H
 #define PIN_H
 
@@ -54,8 +56,7 @@ template <typename Port, int Pin>
 void pin<Port, Pin>::set(bool value) {
     if (value) {
         Port::port(Port::port() | (1 << Pin));
-    }
-    else {
+    } else {
         Port::port(Port::port() & ~(1 << Pin));
     }
 }
@@ -84,8 +85,7 @@ template <typename Port, int Pin>
 void pin<Port, Pin>::output(bool value) {
     if (value) {
         Port::dir(Port::dir() | (1 << Pin));
-    }
-    else {
+    } else {
         Port::dir(Port::dir() & ~(1 << Pin));
     }
 }
@@ -147,8 +147,7 @@ template <typename Port, int Pin>
 void inv_pin<Port, Pin>::set(bool value) {
     if (value) {
         Port::port(Port::port() & ~(1 << Pin));
-    }
-    else {
+    } else {
         Port::port(Port::port() | (1 << Pin));
     }
 }
@@ -177,8 +176,7 @@ template <typename Port, int Pin>
 void inv_pin<Port, Pin>::output(bool value) {
     if (value) {
         Port::dir(Port::dir() | (1 << Pin));
-    }
-    else {
+    } else {
         Port::dir(Port::dir() & ~(1 << Pin));
     }
 }
@@ -264,5 +262,4 @@ typedef pin<portb, 2> DIO51;
 typedef pin<portb, 1> DIO52;
 typedef pin<portb, 0> DIO53;
 
-#endif // PIN_H
-
+#endif  // PIN_H

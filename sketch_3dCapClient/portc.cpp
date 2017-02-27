@@ -1,27 +1,17 @@
+// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+
 #include "portc.h"
+
 #include <avr/io.h>
 
-uint8_t portc::port() {
-    return PORTC;
-}
+uint8_t portc::port() { return PORTC; }
 
-void portc::port(uint8_t v) {
-    PORTC = v;
-}
+void portc::port(uint8_t v) { PORTC = v; }
 
-uint8_t portc::pin() {
-    return PINC;
-}
+uint8_t portc::pin() { return PINC; }
 
-void portc::pin(uint8_t v) {
-    PINC = v;
-}
+void portc::pin(uint8_t v) { PINC = v; }
 
-uint8_t portc::dir() {
-    return DDRC;
-}
+uint8_t portc::dir() { return DDRC; }
 
-void portc::dir(uint8_t v) {
-    DDRC = v;
-}
-
+void portc::dir(uint8_t v) { DDRC = v; }

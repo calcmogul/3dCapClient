@@ -1,13 +1,9 @@
-// =============================================================================
-// File Name: Util.cpp
-// Description: Contains miscellaneous utility functions
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "Util.hpp"
 
-const std::vector<std::string> split(const std::string& str, const
-                                     std::string& delim, size_t num) {
+const std::vector<std::string> split(const std::string& str,
+                                     const std::string& delim, size_t num) {
     std::vector<std::string> arr;
     size_t count = 0;
 
@@ -16,12 +12,10 @@ const std::vector<std::string> split(const std::string& str, const
         arr.push_back(str.substr(pos, str.find(delim, pos)));
         count++;
 
-        while (pos < str.length() && str.substr(pos, delim.length()) !=
-               delim) {
+        while (pos < str.length() && str.substr(pos, delim.length()) != delim) {
             pos += delim.length();
         }
     }
 
     return arr;
 }
-

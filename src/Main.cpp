@@ -1,39 +1,35 @@
-// =============================================================================
-// File Name: Main.cpp
-// Description: Implements mouse input driver using 3D capacitor
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
+#include <cmath>
+#include <cstdlib>
 #include <iostream>
 #include <string>
 #include <vector>
-#include <cstdlib>
-#include <cmath>
-
-#include "SerialPort.hpp"
-#include "RenderData.hpp"
-#include "Rendering.hpp"
-
-#include "Normalize.hpp"
-#include "WeightedAverageFilter.hpp"
-#include "KalmanFilter.hpp"
-#include "Util.hpp"
-#include "Matrix.hpp"
 
 #include <SFML/Graphics/RenderWindow.hpp>
 #include <SFML/OpenGL.hpp>
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-float lastPos[sen] {0.f, 0.f, 0.f};
-float rawInput[sen] {0.f, 0.f, 0.f};
+#include "KalmanFilter.hpp"
+#include "Matrix.hpp"
+#include "Normalize.hpp"
+#include "RenderData.hpp"
+#include "Rendering.hpp"
+#include "SerialPort.hpp"
+#include "Util.hpp"
+#include "WeightedAverageFilter.hpp"
+
+float lastPos[sen]{0.f, 0.f, 0.f};
+float rawInput[sen]{0.f, 0.f, 0.f};
 
 // x (left plate), y (bottom plate), z (right plate)
 
+// Implements mouse input driver using 3D capacitor
 int main() {
     RenderData renderData;
     std::vector<Normalize> normalizer(sen);
-    const bool flip[sen] = { true, true, true };
+    const bool flip[sen] = {true, true, true};
 
     SerialPort serialPort;
 
@@ -45,13 +41,13 @@ int main() {
     settings.minorVersion = 0;
 
     // Setup
-    sf::RenderWindow mainWin(
-        sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Cube",
-        sf::Style::Resize | sf::Style::Close, settings);
+    sf::RenderWindow mainWin(sf::VideoMode::getDesktopMode(),
+                             "3D Capacitor Demo - Cube",
+                             sf::Style::Resize | sf::Style::Close, settings);
     mainWin.setFramerateLimit(25);
-    sf::RenderWindow mainWin2(
-        sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Color",
-        sf::Style::Resize | sf::Style::Close, settings);
+    sf::RenderWindow mainWin2(sf::VideoMode::getDesktopMode(),
+                              "3D Capacitor Demo - Color",
+                              sf::Style::Resize | sf::Style::Close, settings);
     mainWin2.setFramerateLimit(25);
 
     mainWin.setActive();
@@ -76,9 +72,9 @@ int main() {
     glDisable(GL_TEXTURE_2D);
 
     // Declare lighting parameters
-    GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
-    GLfloat mat_shininess[] = { 50.0 };
-    GLfloat light_position[] = { 1.0, 1.0, 1.0, 0.0 };
+    GLfloat mat_specular[] = {1.0, 1.0, 1.0, 1.0};
+    GLfloat mat_shininess[] = {50.0};
+    GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
 
     // Set lighting parameters
     glShadeModel(GL_SMOOTH);
@@ -107,27 +103,23 @@ int main() {
         while (mainWin.pollEvent(event)) {
             if (event.type == sf::Event::Closed) {
                 mainWin.close();
-            }
-            else if (event.type == sf::Event::KeyPressed) {
+            } else if (event.type == sf::Event::KeyPressed) {
                 if (event.key.code == sf::Keyboard::Space) {
                     if (renderData.haveValidData) {
                         for (unsigned int i = 0; i < sen; i++) {
                             normalizer[i].setMinimum(rawInput[i]);
                         }
                     }
-                }
-                else if (event.key.code == sf::Keyboard::LShift ||
-                         event.key.code == sf::Keyboard::RShift) {
+                } else if (event.key.code == sf::Keyboard::LShift ||
+                           event.key.code == sf::Keyboard::RShift) {
                     renderData.useRawInput = !renderData.useRawInput;
-                }
-                else if (event.key.code == sf::Keyboard::LControl ||
-                         event.key.code == sf::Keyboard::RControl) {
+                } else if (event.key.code == sf::Keyboard::LControl ||
+                           event.key.code == sf::Keyboard::RControl) {
                     for (auto& obj : renderData.camera) {
                         obj.reset();
                     }
                 }
-            }
-            else if (event.type == sf::Event::MouseButtonPressed) {
+            } else if (event.type == sf::Event::MouseButtonPressed) {
                 if (event.mouseButton.button == sf::Mouse::Right) {
                     // Reset filters
                     for (unsigned int i = 0; i < sen; i++) {
@@ -140,8 +132,7 @@ int main() {
                         renderData.rotationMat.height(),
                         renderData.rotationMat.width());
                 }
-            }
-            else if (event.type == sf::Event::MouseMoved) {
+            } else if (event.type == sf::Event::MouseMoved) {
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
                     float x = event.mouseMove.x - lastMousePos.x;
                     float y = event.mouseMove.y - lastMousePos.y;
@@ -175,18 +166,16 @@ int main() {
 
         // Read line of serialPort data
         if (serialPort.isConnected()) {
-            while ((numRead =
-                        serialPort.read(&curChar, 1)) > 0 && curChar != '\n' &&
-                   curChar != '\0') {
+            while ((numRead = serialPort.read(&curChar, 1)) > 0 &&
+                   curChar != '\n' && curChar != '\0') {
                 serialPortData += curChar;
             }
 
             if (numRead == -1) {
                 // EOF has been reached (socket disconnected)
                 serialPort.disconnect();
-            }
-            // If curChar == '\n', there is a new line of complete data
-            else if (curChar == '\n' && serialPortData.length() != 0) {
+            } else if (curChar == '\n' && serialPortData.length() != 0) {
+                // If curChar == '\n', there is a new line of complete data
                 std::cout << "\"" << serialPortData << "\"\n";
 
                 std::vector<std::string> parts = split(serialPortData, " ");
@@ -197,8 +186,9 @@ int main() {
                     for (unsigned int i = 0; i < sen; i++) {
                         rawInput[i] = std::atof(parts[i].c_str());
 
-                        std::cout << "diff[" << i << "]=" << std::fabs(
-                            rawInput[i] - lastPos[i]) << "\n";
+                        std::cout << "diff[" << i
+                                  << "]=" << std::fabs(rawInput[i] - lastPos[i])
+                                  << "\n";
 
                         if (std::fabs(rawInput[i] - lastPos[i]) < 350 ||
                             lastPos[i] < 15000) {
@@ -210,18 +200,16 @@ int main() {
 
                         // Update camera and position filters
                         if (flip[i]) {
-                            //renderData.camera[i].update(1 - raw);
+                            // renderData.camera[i].update(1 - raw);
                             renderData.avgPos[i].update(1 - raw);
                             renderData.rawPos[i] = 1 - raw;
-                        }
-                        else {
-                            //renderData.camera[i].update(raw);
+                        } else {
+                            // renderData.camera[i].update(raw);
                             renderData.avgPos[i].update(raw);
                             renderData.rawPos[i] = raw;
                         }
                     }
-                }
-                else {
+                } else {
                     renderData.haveValidData = false;
                 }
 
@@ -240,4 +228,3 @@ int main() {
 
     return 0;
 }
-

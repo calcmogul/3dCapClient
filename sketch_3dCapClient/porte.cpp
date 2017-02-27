@@ -1,27 +1,17 @@
+// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+
 #include "porte.h"
+
 #include <avr/io.h>
 
-uint8_t porte::port() {
-    return PORTE;
-}
+uint8_t porte::port() { return PORTE; }
 
-void porte::port(uint8_t v) {
-    PORTE = v;
-}
+void porte::port(uint8_t v) { PORTE = v; }
 
-uint8_t porte::pin() {
-    return PINE;
-}
+uint8_t porte::pin() { return PINE; }
 
-void porte::pin(uint8_t v) {
-    PINE = v;
-}
+void porte::pin(uint8_t v) { PINE = v; }
 
-uint8_t porte::dir() {
-    return DDRE;
-}
+uint8_t porte::dir() { return DDRE; }
 
-void porte::dir(uint8_t v) {
-    DDRE = v;
-}
-
+void porte::dir(uint8_t v) { DDRE = v; }

@@ -1,14 +1,10 @@
-// =============================================================================
-// File Name: FilterBase.cpp
-// Description: Provides an interface for filter classes
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "FilterBase.hpp"
 
-FilterBase::FilterBase() {
-    reset();
-}
+using namespace std::chrono_literals;
+
+FilterBase::FilterBase() { reset(); }
 
 void FilterBase::reset() {
     m_stateEstimate = 0.0;
@@ -16,7 +12,4 @@ void FilterBase::reset() {
     m_lastTime = std::chrono::system_clock::now();
 }
 
-double FilterBase::getEstimate() {
-    return m_stateEstimate;
-}
-
+double FilterBase::getEstimate() { return m_stateEstimate; }

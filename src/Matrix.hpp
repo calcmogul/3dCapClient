@@ -1,11 +1,6 @@
-// =============================================================================
-// File Name: Matrix.hpp
-// Description: A utility library for manipulating matrices
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef MATRIX_HPP
-#define MATRIX_HPP
+#pragma once
 
 #include <memory>
 
@@ -15,12 +10,15 @@ class Matrix;
 template <class T>
 std::ostream& operator<<(std::ostream&, const Matrix<T>&);
 
+/**
+ * A utility library for manipulating matrices
+ */
 template <class T>
 class Matrix {
 public:
     Matrix(size_t height, size_t width, bool initAsIdent = false);
 
-    Matrix(T rhs);
+    Matrix(T rhs);  // NOLINT
     Matrix(const Matrix<T>& rhs);
 
     // throws std::domain_error with dim mismatch
@@ -86,8 +84,8 @@ public:
     size_t height() const;
     size_t width() const;
 
-    friend std::ostream & operator<<<T>(std::ostream & output,
-                                        const Matrix<T> &rhs);
+    friend std::ostream& operator<<<T>(std::ostream& output,
+                                       const Matrix<T>& rhs);
 
 private:
     // row-major matrix
@@ -108,6 +106,3 @@ Matrix<T> createIdentity(size_t height, size_t width);
 }
 
 #include "Matrix.inl"
-
-#endif // MATRIX_HPP
-

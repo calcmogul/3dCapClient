@@ -1,11 +1,6 @@
-// =============================================================================
-// File Name: GLUtils.hpp
-// Description: Provides convenience functions for drawing OpenGL shapes
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef GL_UTILS_HPP
-#define GL_UTILS_HPP
+#pragma once
 
 #include <GL/gl.h>
 
@@ -15,6 +10,3 @@
 void drawBox(float width, GLenum fillType);
 
 void drawCircle(float radius, float points);
-
-#endif // GL_UTILS_HPP
-

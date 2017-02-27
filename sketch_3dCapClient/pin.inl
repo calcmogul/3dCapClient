@@ -185,4 +185,3 @@ template <typename Port, int Pin>
 void inv_pin<Port, Pin>::pullup() {
     set_low();
 }
-

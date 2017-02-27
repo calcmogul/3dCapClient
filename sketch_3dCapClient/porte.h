@@ -1,3 +1,5 @@
+// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+
 #ifndef PORTE_H
 #define PORTE_H
 
@@ -14,5 +16,4 @@ struct porte {
     static void dir(uint8_t v);
 };
 
-#endif // PORTE_H
-
+#endif  // PORTE_H

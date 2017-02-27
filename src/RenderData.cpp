@@ -1,11 +1,5 @@
-// =============================================================================
-// File Name: RenderData.cpp
-// Description: A container for globals to pass to rendering functions
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "RenderData.hpp"
 
-RenderData::RenderData() {
-    font.loadFromFile("arial.ttf");
-}
+RenderData::RenderData() { font.loadFromFile("arial.ttf"); }

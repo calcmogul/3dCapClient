@@ -1,12 +1,10 @@
-// =============================================================================
-// File Name: GLUtils.cpp
-// Description: Provides convenience functions for drawing OpenGL shapes
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "GLUtils.hpp"
-#include <GL/glu.h>
+
 #include <cmath>
+
+#include <GL/glu.h>
 
 void drawBox(float width, GLenum fillType) {
     float height = width, depth = width;
@@ -58,8 +56,7 @@ void drawBox(float width, GLenum fillType) {
         glVertex3f(0, 0, 0);
         glVertex3f(0, 0, -depth);
         glEnd();
-    }
-    else if (fillType == GL_LINE) {
+    } else if (fillType == GL_LINE) {
         // Front face
         glBegin(GL_LINE_STRIP);
         glVertex3f(width, 0, 0);
@@ -103,19 +100,11 @@ void drawCircle(float radius, float points) {
     glVertex3f(0.f, 0.f, 0.f);
 
     for (float theta = 0.f; theta < 360.f; theta += 360.f / points) {
-        glVertex3f(
-            radius * cos(theta * M_PI / 180.f),
-            radius * sin(theta * M_PI / 180.f),
-            0.f
-            );
+        glVertex3f(radius * std::cos(theta * M_PI / 180.f),
+                   radius * std::sin(theta * M_PI / 180.f), 0.f);
     }
 
-    glVertex3f(
-        radius,
-        0.f,
-        0.f
-        );
+    glVertex3f(radius, 0.f, 0.f);
 
     glEnd();
 }
-

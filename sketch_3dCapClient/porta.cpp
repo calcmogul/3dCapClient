@@ -1,27 +1,17 @@
+// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+
 #include "porta.h"
+
 #include <avr/io.h>
 
-uint8_t porta::port() {
-    return PORTA;
-}
+uint8_t porta::port() { return PORTA; }
 
-void porta::port(uint8_t v) {
-    PORTA = v;
-}
+void porta::port(uint8_t v) { PORTA = v; }
 
-uint8_t porta::pin() {
-    return PINA;
-}
+uint8_t porta::pin() { return PINA; }
 
-void porta::pin(uint8_t v) {
-    PINA = v;
-}
+void porta::pin(uint8_t v) { PINA = v; }
 
-uint8_t porta::dir() {
-    return DDRA;
-}
+uint8_t porta::dir() { return DDRA; }
 
-void porta::dir(uint8_t v) {
-    DDRA = v;
-}
-
+void porta::dir(uint8_t v) { DDRA = v; }

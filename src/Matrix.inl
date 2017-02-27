@@ -418,4 +418,3 @@ Matrix<T> createIdentity(size_t height, size_t width) {
     return temp;
 }
 }
-

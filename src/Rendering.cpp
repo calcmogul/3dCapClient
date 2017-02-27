@@ -1,16 +1,12 @@
-// =============================================================================
-// File Name: Rendering.cpp
-// Description: Provides helper functions for drawing various elements of the
-//              GUI with OpenGL
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "Rendering.hpp"
-#include "GLUtils.hpp"
 
-#include <SFML/OpenGL.hpp>
 #include <GL/glu.h>
 #include <SFML/Graphics/Text.hpp>
+#include <SFML/OpenGL.hpp>
+
+#include "GLUtils.hpp"
 
 void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
     // Save projection matrix
@@ -35,13 +31,11 @@ void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
         if (data.haveValidData) {
             // Connected and valid data
             glColor3ub(0, 200, 0);
-        }
-        else {
+        } else {
             // Connected but no valid data
             glColor3ub(255, 220, 0);
         }
-    }
-    else {
+    } else {
         // Disconnected
         glColor3ub(200, 0, 0);
     }
@@ -75,20 +69,19 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     // Set up projection matrix
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(60.f,
-                   static_cast<float>(window->getSize().x) / window->getSize().y,
-                   200.f,
-                   900.f);
+    gluPerspective(
+        60.f, static_cast<float>(window->getSize().x) / window->getSize().y,
+        200.f, 900.f);
 
     // Set up modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(
-        w / 2 + (data.camera[0].getEstimate() - data.camera[2].getEstimate()) * w / 2,
+        w / 2 +
+            (data.camera[0].getEstimate() - data.camera[2].getEstimate()) * w /
+                2,
         (w * 3 + (data.camera[1].getEstimate() - 1) * window->getSize().y / 2),
-        w * 2,
-        w / 2, w / 2, w / 2,
-        0, 1, 0);
+        w * 2, w / 2, w / 2, w / 2, 0, 1, 0);
 
     /* The sensor's coordinate axes are oriented differently from OpenGL's
      * axes, so rotate the view until they match. glTranslatef() is used to
@@ -99,7 +92,8 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     glTranslatef(w / 2, w / 2, w / 2);
     glRotatef(180.f, 1.f, 0.f, 0.f);
 
-    glMultMatrixf(data.rotationMat.transpose().data()); // Rotate view with mouse
+    glMultMatrixf(
+        data.rotationMat.transpose().data());  // Rotate view with mouse
     glTranslatef(-w / 2, -w / 2, -w / 2);
 
     glPushMatrix();
@@ -127,16 +121,12 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     float posModifier = w - subDivWidth;
 
     if (data.useRawInput) {
-        glTranslatef(
-            data.rawPos[0] * posModifier,
-            data.rawPos[1] * posModifier,
-            data.rawPos[2] * posModifier);
-    }
-    else {
-        glTranslatef(
-            data.avgPos[0].getEstimate() * posModifier,
-            data.avgPos[1].getEstimate() * posModifier,
-            data.avgPos[2].getEstimate() * posModifier);
+        glTranslatef(data.rawPos[0] * posModifier, data.rawPos[1] * posModifier,
+                     data.rawPos[2] * posModifier);
+    } else {
+        glTranslatef(data.avgPos[0].getEstimate() * posModifier,
+                     data.avgPos[1].getEstimate() * posModifier,
+                     data.avgPos[2].getEstimate() * posModifier);
     }
 
     // Draw sphere for current position of hand
@@ -155,23 +145,20 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
             for (unsigned int x = 0; x < subDivs; x++) {
                 glPushMatrix();
 
-                glTranslatef(x * subDivWidth,
-                             y * subDivWidth,
-                             z * subDivWidth);
+                glTranslatef(x * subDivWidth, y * subDivWidth, z * subDivWidth);
 
                 /* Converts normalized position estimate [0..1] to
                  * position in array [0..subDivs-1]
                  */
-                if (x ==
-                    std::lround(data.avgPos[0].getEstimate() * (subDivs - 1)) &&
-                    y ==
-                    std::lround(data.avgPos[1].getEstimate() * (subDivs - 1)) &&
-                    z ==
-                    std::lround(data.avgPos[2].getEstimate() * (subDivs - 1))) {
+                if (x == std::lround(data.avgPos[0].getEstimate() *
+                                     (subDivs - 1)) &&
+                    y == std::lround(data.avgPos[1].getEstimate() *
+                                     (subDivs - 1)) &&
+                    z == std::lround(data.avgPos[2].getEstimate() *
+                                     (subDivs - 1))) {
                     // transparent red
                     glColor4ub(255, 0, 0, 200);
-                }
-                else {
+                } else {
                     // transparent gray
                     glColor4ub(100, 100, 100, 100);
                 }
@@ -223,16 +210,10 @@ void renderColor(sf::RenderWindow* window, RenderData& data) {
     glViewport(0, 0, window->getSize().x, window->getSize().y);
 
     if (data.useRawInput) {
-        glClearColor(data.rawPos[0],
-                     data.rawPos[1],
-                     data.rawPos[2],
-                     1.f);
-    }
-    else {
-        glClearColor(data.avgPos[0].getEstimate(),
-                     data.avgPos[1].getEstimate(),
-                     data.avgPos[2].getEstimate(),
-                     1.f);
+        glClearColor(data.rawPos[0], data.rawPos[1], data.rawPos[2], 1.f);
+    } else {
+        glClearColor(data.avgPos[0].getEstimate(), data.avgPos[1].getEstimate(),
+                     data.avgPos[2].getEstimate(), 1.f);
     }
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -240,4 +221,3 @@ void renderColor(sf::RenderWindow* window, RenderData& data) {
 
     window->display();
 }
-

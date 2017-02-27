@@ -1,15 +1,13 @@
-// =============================================================================
-// File Name: Normalize.hpp
-// Description: Normalizes numbers from within a given range defined by a min
-//             and max to [0..1]
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef NORMALIZE_HPP
-#define NORMALIZE_HPP
+#pragma once
 
 #include <cmath>
 
+/**
+ * Normalizes numbers from within a given range defined by a min and max to
+ * [0..1]
+ */
 class Normalize {
 public:
     /* Will replace either m_min or m_max with value if it is outside of the
@@ -31,6 +29,3 @@ private:
     static constexpr float m_minDistance{1.f};
     static constexpr float m_maxDistance{5.f};
 };
-
-#endif // NORMALIZE_HPP
-

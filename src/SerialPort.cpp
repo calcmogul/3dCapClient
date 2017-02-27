@@ -1,22 +1,19 @@
-// =============================================================================
-// File Name: SerialPort.cpp
-// Description: Provides an interface for communicating with an Arduino via the
-//             serial port
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "SerialPort.hpp"
-#include <iostream>
+
+#include <algorithm>
 #include <cstring>
+#include <iostream>
 
 #ifndef _WIN32
-#include <unistd.h>  // UNIX standard function definitions
-#include <fcntl.h>   // File control definitions
-#include <errno.h>   // Error number definitions
-#include <termios.h> // POSIX terminal control definitions
 #include <dirent.h>  // Method for listing serial ports
-#include <sys/types.h>
+#include <fcntl.h>   // File control definitions
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <termios.h>  // POSIX terminal control definitions
+#include <unistd.h>   // UNIX standard function definitions
+#include <cerrno>     // Error number definitions
 #endif
 
 SerialPort::SerialPort(std::string portName) {
@@ -26,9 +23,7 @@ SerialPort::SerialPort(std::string portName) {
     m_connected = false;
 }
 
-SerialPort::~SerialPort() {
-    disconnect();
-}
+SerialPort::~SerialPort() { disconnect(); }
 
 void SerialPort::connect(std::string portName) {
     // Disconnect before reconnecting or connecting to a different serial port
@@ -36,29 +31,24 @@ void SerialPort::connect(std::string portName) {
         disconnect();
     }
 
-    // Update name if necessary
     if (portName != "") {
+        // Update name if necessary
         m_portName = portName;
-    }
-    // If no stored name, don't attempt a connection
-    else if (m_portName == "") {
+    } else if (m_portName == "") {
+        // If no stored name, don't attempt a connection
         return;
     }
 
-    // Try to connect to the given port
+// Try to connect to the given port
 #ifdef _WIN32
-    hSerial = CreateFile(portName.c_str(),
-                         GENERIC_READ | GENERIC_WRITE,
-                         0,
-                         nullptr,
-                         OPEN_EXISTING,
-                         FILE_ATTRIBUTE_NORMAL,
-                         nullptr);
+    hSerial =
+        CreateFile(portName.c_str(), GENERIC_READ | GENERIC_WRITE, 0, nullptr,
+                   OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
 #else
     m_fd = open(portName.c_str(), O_RDONLY | O_NOCTTY | O_NDELAY);
 #endif
 
-    // Check if connection was successful
+// Check if connection was successful
 #ifdef _WIN32
     if (hSerial == INVALID_HANDLE_VALUE) {
         std::cout << __FILE__ << ": Unable to open " << portName << '\n';
@@ -74,13 +64,12 @@ void SerialPort::connect(std::string portName) {
                   << ": No such file or directory\n";
 
         return;
-    }
-    else {
+    } else {
         fcntl(m_fd, F_SETFL, FNDELAY);
     }
 #endif
 
-    // Set baud rate
+// Set baud rate
 #ifdef _WIN32
     DCB dcbSerialPortParams = {0};
 
@@ -92,8 +81,7 @@ void SerialPort::connect(std::string portName) {
                   << portName << '\n';
 
         return;
-    }
-    else {
+    } else {
         // Define serial connection parameters for the Arduino board
         dcbSerialPortParams.BaudRate = CBR_115200;
         dcbSerialPortParams.ByteSize = 8;
@@ -164,8 +152,7 @@ int SerialPort::read(char* buffer, unsigned int nbChar) {
         unsigned int toRead;
         if (m_status.cbInQue > nbChar) {
             toRead = nbChar;
-        }
-        else {
+        } else {
             toRead = m_status.cbInQue;
         }
 
@@ -174,16 +161,13 @@ int SerialPort::read(char* buffer, unsigned int nbChar) {
          */
         if (ReadFile(hSerial, buffer, toRead, &bytesRead, nullptr)) {
             return bytesRead;
-        }
-        else if (GetLastError() != ERROR_IO_PENDING) {
+        } else if (GetLastError() != ERROR_IO_PENDING) {
             return -1;
-        }
-        else {
+        } else {
             buffer[0] = '\0';
             return 0;
         }
-    }
-    else {
+    } else {
         // There are no bytes to read
         return 0;
     }
@@ -195,15 +179,12 @@ int SerialPort::read(char* buffer, unsigned int nbChar) {
         struct stat fileStats;
         if (stat(m_portName.c_str(), &fileStats) == -1) {
             return -1;
-        }
-        else {
+        } else {
             return 0;
         }
-    }
-    else if (bytesRead == -1 && errno != EAGAIN) {
+    } else if (bytesRead == -1 && errno != EAGAIN) {
         return -1;
-    }
-    else {
+    } else {
         return std::max(bytesRead, 0);
     }
 #endif
@@ -224,8 +205,7 @@ bool SerialPort::write(char* buffer, unsigned int nbChar) {
         ClearCommError(hSerial, &m_errors, &m_status);
 
         return false;
-    }
-    else {
+    } else {
         return true;
     }
 #else
@@ -236,8 +216,7 @@ bool SerialPort::write(char* buffer, unsigned int nbChar) {
 
         if (bytesSent > 0) {
             pos += bytesSent;
-        }
-        else if (bytesSent == -1 && errno != EAGAIN) {
+        } else if (bytesSent == -1 && errno != EAGAIN) {
             return false;
         }
     }
@@ -246,9 +225,7 @@ bool SerialPort::write(char* buffer, unsigned int nbChar) {
 #endif
 }
 
-bool SerialPort::isConnected() const {
-    return m_connected;
-}
+bool SerialPort::isConnected() const { return m_connected; }
 
 std::vector<std::string> SerialPort::getSerialPorts() {
     std::vector<std::string> ports;
@@ -261,14 +238,8 @@ std::vector<std::string> SerialPort::getSerialPorts() {
     for (DWORD Index = 0; res == ERROR_SUCCESS; Index++) {
         char SubKeyName[255];
         DWORD cName = 255;
-        res = RegEnumKeyEx(hRegAdapters,
-                           Index,
-                           SubKeyName,
-                           &cName,
-                           nullptr,
-                           nullptr,
-                           nullptr,
-                           nullptr);
+        res = RegEnumKeyEx(hRegAdapters, Index, SubKeyName, &cName, nullptr,
+                           nullptr, nullptr, nullptr);
         if (res != ERROR_SUCCESS) {
             break;
         }
@@ -282,8 +253,8 @@ std::vector<std::string> SerialPort::getSerialPorts() {
         while ((dir = readdir(d)) != nullptr) {
             if (dir->d_type == DT_CHR &&
                 (std::strncmp(dir->d_name, "ttyS", sizeof("ttyS") - 1) == 0 ||
-                 std::strncmp(dir->d_name, "ttyACM",
-                              sizeof("ttyACM") - 1) == 0)) {
+                 std::strncmp(dir->d_name, "ttyACM", sizeof("ttyACM") - 1) ==
+                     0)) {
                 // std::cout << dir->d_name << '\n';
                 std::string tmp = "/dev/";
                 tmp += dir->d_name;
@@ -297,4 +268,3 @@ std::vector<std::string> SerialPort::getSerialPorts() {
 
     return ports;
 }
-

@@ -1,3 +1,5 @@
+// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+
 #ifndef PORTD_H
 #define PORTD_H
 
@@ -14,5 +16,4 @@ struct portd {
     static void dir(uint8_t v);
 };
 
-#endif // PORTD_H
-
+#endif  // PORTD_H

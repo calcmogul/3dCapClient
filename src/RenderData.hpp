@@ -1,21 +1,21 @@
-// =============================================================================
-// File Name: RenderData.hpp
-// Description: A container for globals to pass to rendering functions
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef RENDER_DATA_HPP
-#define RENDER_DATA_HPP
+#pragma once
 
 #include <vector>
-#include "KalmanFilter.hpp"
-#include "WeightedAverageFilter.hpp"
-#include "Matrix.hpp"
-#include <SFML/OpenGL.hpp>
+
 #include <SFML/Graphics/Font.hpp>
+#include <SFML/OpenGL.hpp>
 
-const unsigned int sen = 3; // sensors
+#include "KalmanFilter.hpp"
+#include "Matrix.hpp"
+#include "WeightedAverageFilter.hpp"
 
+const unsigned int sen = 3;  // sensors
+
+/**
+ * A container for globals to pass to rendering functions
+ */
 class RenderData {
 public:
     RenderData();
@@ -31,6 +31,3 @@ public:
 
     sf::Font font;
 };
-
-#endif // RENDER_DATA_HPP
-

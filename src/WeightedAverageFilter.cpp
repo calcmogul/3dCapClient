@@ -1,16 +1,10 @@
-// =============================================================================
-// File Name: WeightedAverageFilter.cpp
-// Description: Averages new value with old one using a given weight for the new
-//             one [0..1]
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "WeightedAverageFilter.hpp"
+
 #include <cmath>
 
-WeightedAverageFilter::WeightedAverageFilter(float adapt) {
-    m_adapt = adapt;
-}
+WeightedAverageFilter::WeightedAverageFilter(float adapt) { m_adapt = adapt; }
 
 void WeightedAverageFilter::update(double input) {
     // Test for NaN (all comparisons with NaN will be false)
@@ -27,4 +21,3 @@ void WeightedAverageFilter::update(double input) {
     // Update the previous time for the next delta
     m_lastTime = std::chrono::system_clock::now();
 }
-

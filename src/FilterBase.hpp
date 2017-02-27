@@ -1,15 +1,12 @@
-// =============================================================================
-// File Name: FilterBase.hpp
-// Description: Provides an interface for filter classes
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef FILTER_BASE_HPP
-#define FILTER_BASE_HPP
+#pragma once
 
 #include <chrono>
-using namespace std::chrono_literals;
 
+/**
+ * Provides an interface for filter classes
+ */
 class FilterBase {
 public:
     FilterBase();
@@ -30,6 +27,3 @@ protected:
     // Used to find dt in update()
     std::chrono::time_point<std::chrono::system_clock> m_lastTime;
 };
-
-#endif // FILTER_BASE_HPP
-

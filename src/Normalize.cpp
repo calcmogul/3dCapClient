@@ -1,9 +1,4 @@
-// =============================================================================
-// File Name: Normalize.hpp
-// Description: Normalizes numbers from within a given range defined by a min
-//             and max to [0..1]
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "Normalize.hpp"
 
@@ -17,9 +12,7 @@ void Normalize::expandRange(float value) {
     }
 }
 
-void Normalize::setMinimum(float value) {
-    m_min = value;
-}
+void Normalize::setMinimum(float value) { m_min = value; }
 
 void Normalize::expandMaximum(float value) {
     if (value > m_max) {
@@ -36,8 +29,7 @@ float Normalize::normalize(float value) {
 
     if (temp < 0.f) {
         return 0.f;
-    }
-    else if (temp > 1.f) {
+    } else if (temp > 1.f) {
         return 1.f;
     }
 
@@ -51,15 +43,14 @@ float Normalize::linearize(float value) {
         return 1.f;
     }
 
-    float linear = sqrt(1 / normalized);
+    float linear = std::sqrt(1 / normalized);
 
     // Normalize inverse square value to [0..1] given a maximum distance range
     linear = (linear - m_minDistance) / (m_maxDistance - m_minDistance);
 
     if (linear < 0.f) {
         return 0.f;
-    }
-    else if (linear > 1.f) {
+    } else if (linear > 1.f) {
         return 1.f;
     }
 
@@ -70,4 +61,3 @@ void Normalize::reset() {
     m_min = INFINITY;
     m_max = -INFINITY;
 }
-

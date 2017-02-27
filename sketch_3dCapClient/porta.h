@@ -1,3 +1,5 @@
+// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+
 #ifndef PORTA_H
 #define PORTA_H
 
@@ -14,5 +16,4 @@ struct porta {
     static void dir(uint8_t v);
 };
 
-#endif // PORTA_H
-
+#endif  // PORTA_H

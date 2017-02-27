@@ -1,20 +1,18 @@
-// =============================================================================
-// File Name: SerialPort.hpp
-// Description: Provides an interface for communicating with an Arduino via the
-//             serial port
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef SERIAL_PORT_HPP
-#define SERIAL_PORT_HPP
+#pragma once
+
+#include <string>
+#include <vector>
 
 #ifdef _WIN32
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #endif
-#include <vector>
-#include <string>
 
+/**
+ * Provides an interface for communicating with an Arduino via the serial port
+ */
 class SerialPort {
 public:
     // Initialize SerialPort communication with the given COM port
@@ -74,6 +72,3 @@ private:
     // Connection status
     bool m_connected;
 };
-
-#endif // SERIAL_PORT_HPP
-

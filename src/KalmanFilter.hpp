@@ -1,16 +1,14 @@
-// =============================================================================
-// File Name: KalmanFilter.hpp
-// Description: Implements a Kalman filter for single input filtering
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef KALMAN_FILTER_HPP
-#define KALMAN_FILTER_HPP
+#pragma once
 
 #include "FilterBase.hpp"
 
 // m_stateEstimate == xHat, the running estimate of state calculated by filter
 
+/**
+ * Implements a Kalman filter for single input filtering
+ */
 class KalmanFilter : public FilterBase {
 public:
     KalmanFilter(double Q, double R);
@@ -35,6 +33,3 @@ private:
     // If true, update() sets current estimate to first measurement
     bool m_firstRun;
 };
-
-#endif // KALMAN_FILTER_HPP
-

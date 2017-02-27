@@ -1,17 +1,14 @@
-// =============================================================================
-// File Name: WeightedAverageFilter.hpp
-// Description: Averages new value with old one using a given weight for the new
-//             one [0..1]
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
-#ifndef WEIGHTED_AVERAGE_FILTER_HPP
-#define WEIGHTED_AVERAGE_FILTER_HPP
+#pragma once
 
 #include "FilterBase.hpp"
 
 // m_stateEstimate == the average state
 
+/**
+ * Averages new value with old one using a given weight for the new one [0..1]
+ */
 class WeightedAverageFilter : public FilterBase {
 public:
     explicit WeightedAverageFilter(float adapt);
@@ -21,6 +18,3 @@ public:
 private:
     float m_adapt;
 };
-
-#endif // WEIGHTED_AVERAGE_FILTER_HPP
-

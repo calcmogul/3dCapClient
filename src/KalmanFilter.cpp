@@ -1,16 +1,8 @@
-// =============================================================================
-// File Name: KalmanFilter.cpp
-// Description: Implements a Kalman filter for single input filtering
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
 
 #include "KalmanFilter.hpp"
 
-KalmanFilter::KalmanFilter(double Q, double R) :
-    m_Q(Q),
-    m_R(R) {
-    reset();
-}
+KalmanFilter::KalmanFilter(double Q, double R) : m_Q(Q), m_R(R) { reset(); }
 
 void KalmanFilter::update(double input) {
     // Get the current dt since the last call to update()
@@ -49,13 +41,9 @@ void KalmanFilter::update(double input) {
     m_lastTime = std::chrono::system_clock::now();
 }
 
-void KalmanFilter::setQ(double Q) {
-    m_Q = Q;
-}
+void KalmanFilter::setQ(double Q) { m_Q = Q; }
 
-void KalmanFilter::setR(double R) {
-    m_R = R;
-}
+void KalmanFilter::setR(double R) { m_R = R; }
 
 void KalmanFilter::reset() {
     m_P = 0.0;
@@ -63,4 +51,3 @@ void KalmanFilter::reset() {
 
     FilterBase::reset();
 }
-

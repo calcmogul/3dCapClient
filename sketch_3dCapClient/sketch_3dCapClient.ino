@@ -294,4 +294,3 @@ unsigned long checkTimer() {
      */
     return ((timer0_overflow_count << 8) | TCNT0) << 2;
 }
-
