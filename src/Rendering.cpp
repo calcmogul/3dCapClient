@@ -172,7 +172,7 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     window->pushGLStates();
 
     sf::Text text("", data.font, 12);
-    text.setColor(sf::Color::Black);
+    text.setFillColor(sf::Color::Black);
 
     text.setString("raw x: " + std::to_string(data.rawPos[0]));
     text.setPosition(18, 68);
