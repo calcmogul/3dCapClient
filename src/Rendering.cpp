@@ -1,4 +1,4 @@
-// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
+// Copyright (c) Tyler Veness
 
 #include "Rendering.hpp"
 
@@ -77,9 +77,8 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     gluLookAt(
-        w / 2 +
-            (data.camera[0].getEstimate() - data.camera[2].getEstimate()) * w /
-                2,
+        w / 2 + (data.camera[0].getEstimate() - data.camera[2].getEstimate()) *
+                    w / 2,
         (w * 3 + (data.camera[1].getEstimate() - 1) * window->getSize().y / 2),
         w * 2, w / 2, w / 2, w / 2, 0, 1, 0);
 

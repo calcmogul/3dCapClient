@@ -1,20 +1,19 @@
-// =============================================================================
-// File Name: Matrix.inl
-// Description: A utility library for manipulating matrices
-// Author: Tyler Veness
-// =============================================================================
+// Copyright (c) Tyler Veness
 
-#include <cstdint>
-#include <cstring>
+#pragma once
+
 #include <cassert>
 #include <cmath>
-#include <stdexcept>
+#include <cstdint>
+#include <cstring>
 #include <iostream>
+#include <memory>
+#include <stdexcept>
+#include <utility>
 
 template <class T>
-Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
-    m_height(height),
-    m_width(width) {
+Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent)
+    : m_height(height), m_width(width) {
     m_matrix = std::make_unique<T[]>(height * width);
 
     if (initAsIdent) {
@@ -23,8 +22,7 @@ Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
             for (uint32_t j = 0; j < m_width; j++) {
                 if (i == j) {
                     operator()(i, j) = 1;
-                }
-                else {
+                } else {
                     operator()(i, j) = 0;
                 }
             }
@@ -33,17 +31,14 @@ Matrix<T>::Matrix(size_t height, size_t width, bool initAsIdent) :
 }
 
 template <class T>
-Matrix<T>::Matrix(T rhs) :
-    m_matrix(std::make_unique<T[]>(1)),
-    m_height(1),
-    m_width(1) {
+Matrix<T>::Matrix(T rhs)
+    : m_matrix(std::make_unique<T[]>(1)), m_height(1), m_width(1) {
     m_matrix[0] = rhs;
 }
 
 template <class T>
-Matrix<T>::Matrix(const Matrix<T>& rhs) :
-    m_height(rhs.height()),
-    m_width(rhs.width()) {
+Matrix<T>::Matrix(const Matrix<T>& rhs)
+    : m_height(rhs.height()), m_width(rhs.width()) {
     m_matrix = std::make_unique<T[]>(m_height * m_width);
 
     std::memcpy(m_matrix.get(), rhs.m_matrix.get(),
@@ -65,8 +60,8 @@ Matrix<T>& Matrix<T>::operator=(const Matrix<T>& rhs) {
 #endif
         }
 
-        std::memcpy(m_matrix.get(),
-                    rhs.m_matrix.get(), m_height * m_width * sizeof(T));
+        std::memcpy(m_matrix.get(), rhs.m_matrix.get(),
+                    m_height * m_width * sizeof(T));
     }
 
     return *this;
@@ -103,7 +98,7 @@ template <class T>
 Matrix<T>& Matrix<T>::operator+=(const Matrix<T>& rhs) {
     if (height() != rhs.height() || width() != rhs.width()) {
         throw std::domain_error(
-                  "Domain error: arguments have incompatible dimensions");
+            "Domain error: arguments have incompatible dimensions");
     }
 
     for (uint32_t i = 0; i < height(); i++) {
@@ -119,7 +114,7 @@ template <class T>
 Matrix<T>& Matrix<T>::operator-=(const Matrix<T>& rhs) {
     if (height() != rhs.height() || width() != rhs.width()) {
         throw std::domain_error(
-                  "Domain error: arguments have incompatible dimensions");
+            "Domain error: arguments have incompatible dimensions");
     }
 
     for (uint32_t i = 0; i < height(); i++) {
@@ -135,9 +130,8 @@ template <class T>
 Matrix<T>& Matrix<T>::operator*=(const Matrix<T>& rhs) {
     if (width() != rhs.height()) {
         throw std::domain_error(
-                  "Domain error: arguments have incompatible dimensions");
-    }
-    else {
+            "Domain error: arguments have incompatible dimensions");
+    } else {
         Matrix<T> temp(height(), rhs.width());
         std::memset(temp.m_matrix.get(), 0,
                     temp.height() * temp.width() * sizeof(T));
@@ -158,8 +152,7 @@ template <class T>
 bool Matrix<T>::operator==(const Matrix<T>& rhs) const {
     if (height() != rhs.height() || width() != rhs.width()) {
         return false;
-    }
-    else {
+    } else {
         for (uint32_t i = 0; i < height(); i++) {
             for (uint32_t j = 0; j < width(); j++) {
                 if (operator()(i, j) != rhs(i, j)) {
@@ -180,17 +173,16 @@ bool Matrix<T>::operator!=(const Matrix<T>& rhs) const {
 template <class T>
 T& Matrix<T>::operator()(size_t h, size_t w) {
     if (h > height() - 1 || w > width() - 1) {
-        std::cout << h << " > " << height() - 1 << " || " << w << " > " <<
-            width() - 1 << "\n";
+        std::cout << h << " > " << height() - 1 << " || " << w << " > "
+                  << width() - 1 << "\n";
         throw std::out_of_range(
-                  "Out of Range error: array indices out of bounds");
+            "Out of Range error: array indices out of bounds");
     }
 
     // Use values in augmented matrix if w is past width of original matrix
     if (w > m_width - 1) {
         return (*m_augment)(h, w - m_width);
-    }
-    else {
+    } else {
         return m_matrix[h * width() + w];
     }
 }
@@ -204,7 +196,7 @@ template <class T>
 void Matrix<T>::augment(const Matrix<T>& mat) {
     if (height() != mat.height()) {
         throw std::domain_error(
-                  "Domain error: arguments have incompatible dimensions");
+            "Domain error: arguments have incompatible dimensions");
     }
 
     m_augment = std::make_unique<Matrix<T>>(mat.height(), mat.width());
@@ -246,7 +238,8 @@ Matrix<T>& Matrix<T>::inverse() const {
 template <class T>
 T Matrix<T>::det() const {
     if (height() != width()) {
-        throw std::domain_error("Domain error: argument is not a square matrix");
+        throw std::domain_error(
+            "Domain error: argument is not a square matrix");
     }
 
     Matrix<T> temp = *this;
@@ -352,8 +345,7 @@ template <class T>
 size_t Matrix<T>::width() const {
     if (m_isAugmented) {
         return m_width + m_augment->m_width;
-    }
-    else {
+    } else {
         return m_width;
     }
 }
@@ -417,4 +409,4 @@ Matrix<T> createIdentity(size_t height, size_t width) {
 
     return temp;
 }
-}
+}  // namespace Mat

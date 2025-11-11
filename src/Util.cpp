@@ -1,6 +1,9 @@
-// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
+// Copyright (c) Tyler Veness
 
 #include "Util.hpp"
+
+#include <string>
+#include <vector>
 
 const std::vector<std::string> split(const std::string& str,
                                      const std::string& delim, size_t num) {

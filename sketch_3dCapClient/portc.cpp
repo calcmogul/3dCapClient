@@ -1,4 +1,4 @@
-// Copyright (c) Tyler Veness 2017. All Rights Reserved.
+// Copyright (c) Tyler Veness
 
 #include "portc.h"
 

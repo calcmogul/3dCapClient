@@ -1,10 +1,12 @@
-// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
+// Copyright (c) Tyler Veness
 
 #include "SerialPort.hpp"
 
 #include <algorithm>
 #include <cstring>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #ifndef _WIN32
 #include <dirent.h>  // Method for listing serial ports
@@ -13,7 +15,8 @@
 #include <sys/types.h>
 #include <termios.h>  // POSIX terminal control definitions
 #include <unistd.h>   // UNIX standard function definitions
-#include <cerrno>     // Error number definitions
+
+#include <cerrno>  // Error number definitions
 #endif
 
 SerialPort::SerialPort(std::string portName) {

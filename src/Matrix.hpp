@@ -1,4 +1,4 @@
-// Copyright (c) Tyler Veness 2014-2017. All Rights Reserved.
+// Copyright (c) Tyler Veness
 
 #pragma once
 
@@ -84,8 +84,7 @@ public:
     size_t height() const;
     size_t width() const;
 
-    friend std::ostream& operator<<<T>(std::ostream& output,
-                                       const Matrix<T>& rhs);
+    friend std::ostream& operator<<(std::ostream& output, const Matrix<T>& rhs);
 
 private:
     // row-major matrix
@@ -103,6 +102,6 @@ Matrix<T> createQuaternion(T angle, T x, T y, T z);
 
 template <class T>
 Matrix<T> createIdentity(size_t height, size_t width);
-}
+}  // namespace Mat
 
-#include "Matrix.inl"
+#include "Matrix.inc"
