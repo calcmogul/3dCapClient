@@ -25,7 +25,7 @@ float rawInput[sen]{0.f, 0.f, 0.f};
 
 // x (left plate), y (bottom plate), z (right plate)
 
-// Implements mouse input driver using 3D capacitor
+/// Implements mouse input driver using 3D capacitor
 int main() {
     RenderData renderData;
     std::vector<Normalize> normalizer(sen);

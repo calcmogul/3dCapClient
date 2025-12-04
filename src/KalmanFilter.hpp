@@ -6,9 +6,7 @@
 
 // m_stateEstimate == xHat, the running estimate of state calculated by filter
 
-/**
- * Implements a Kalman filter for single input filtering
- */
+/// Implements a Kalman filter for single input filtering
 class KalmanFilter : public FilterBase {
 public:
     KalmanFilter(double Q, double R);

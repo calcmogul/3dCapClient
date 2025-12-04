@@ -4,15 +4,12 @@
 
 #include <cmath>
 
-/**
- * Normalizes numbers from within a given range defined by a min and max to
- * [0..1]
- */
+/// Normalizes numbers from within a given range defined by a min and max to
+/// [0..1]
 class Normalize {
 public:
-    /* Will replace either m_min or m_max with value if it is outside of the
-     * range defined by m_min and m_max
-     */
+    /// Will replace either m_min or m_max with value if it is outside of the
+    /// range defined by m_min and m_max
     void expandRange(float value);
 
     void setMinimum(float value);

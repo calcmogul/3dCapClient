@@ -10,65 +10,58 @@
 #include <windows.h>
 #endif
 
-/**
- * Provides an interface for communicating with an Arduino via the serial port
- */
+/// Provides an interface for communicating with an Arduino via the serial port
 class SerialPort {
 public:
-    // Initialize SerialPort communication with the given COM port
+    /// Initialize SerialPort communication with the given COM port
     explicit SerialPort(std::string portName = "");
 
-    /* Close the connection
-     * NOTE: for some reason you can't connect again before exiting the program
-     * and running it again.
-     */
+    /// Close the connection
+    /// NOTE: for some reason you can't connect again before exiting the program
+    /// and running it again.
     ~SerialPort();
 
-    /* Initialize SerialPort communication with the given COM port. If NULL is
-     * passed as an argument, the previously assigned name will be used. This
-     * should be done in the case of a reconnection attempt.
-     */
+    /// Initialize SerialPort communication with the given COM port. If NULL is
+    /// passed as an argument, the previously assigned name will be used. This
+    /// should be done in the case of a reconnection attempt.
     void connect(std::string portName = "");
 
-    /* Close the connection
-     * NOTE: for some reason you can't connect again before exiting the program
-     * and running it again.
-     */
+    /// Close the connection
+    /// NOTE: for some reason you can't connect again before exiting the program
+    /// and running it again.
     void disconnect();
 
-    /* Read data in a buffer, if nbChar is greater than the maximum number of
-     * bytes available, it will return only the bytes available. The function
-     * return -1 when nothing could be read, the number of bytes actually read.
-     */
+    /// Read data in a buffer, if nbChar is greater than the maximum number of
+    /// bytes available, it will return only the bytes available. The function
+    /// return -1 when nothing could be read, the number of bytes actually read.
     int read(char* buffer, unsigned int nbChar);
 
-    /* Writes data from a buffer through the SerialPort connection. Returns
-     * true on success; returns false on failure.
-     */
+    /// Writes data from a buffer through the SerialPort connection. Returns
+    /// true on success; returns false on failure.
     bool write(char* buffer, unsigned int nbChar);
 
-    // Check if we are actually connected
+    /// Check if we are actually connected
     bool isConnected() const;
 
     static std::vector<std::string> getSerialPorts();
 
 private:
 #ifdef _WIN32
-    // SerialPort comm handler
+    /// SerialPort comm handler
     HANDLE hSerial;
 
-    // Get various information about the connection
+    /// Get various information about the connection
     COMSTAT m_status;
 
-    // Keep track of last error
+    /// Keep track of last error
     DWORD m_errors;
 #else
     int m_fd;
 #endif
 
-    // Contains OS-specific name for serial port
+    /// Contains OS-specific name for serial port
     std::string m_portName;
 
-    // Connection status
+    /// Connection status
     bool m_connected;
 };

@@ -13,9 +13,7 @@
 
 const unsigned int sen = 3;  // sensors
 
-/**
- * A container for globals to pass to rendering functions
- */
+/// A container for globals to pass to rendering functions
 class RenderData {
 public:
     RenderData();
