@@ -95,14 +95,14 @@ void drawBox(float width, GLenum fillType) {
     glPopMatrix();
 }
 
-void drawCircle(float radius, float points) {
+void drawCircle(float radius, int points) {
     glBegin(GL_TRIANGLE_FAN);
 
     glVertex3f(0.f, 0.f, 0.f);
 
-    for (float theta = 0.f; theta < 360.f; theta += 360.f / points) {
-        glVertex3f(radius * std::cos(theta * std::numbers::pi / 180.f),
-                   radius * std::sin(theta * std::numbers::pi / 180.f), 0.f);
+    for (int i = 0; i < points; ++i) {
+        float theta = 2.f * std::numbers::pi_v<float> * i / points;
+        glVertex3f(radius * std::cos(theta), radius * std::sin(theta), 0.f);
     }
 
     glVertex3f(radius, 0.f, 0.f);

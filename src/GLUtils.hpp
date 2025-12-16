@@ -8,4 +8,4 @@
 /// GL_FILL fills surface with color; GL_LINE draws frame.
 void drawBox(float width, GLenum fillType);
 
-void drawCircle(float radius, float points);
+void drawCircle(float radius, int points);

@@ -41,7 +41,7 @@ void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
     }
 
     glDisable(GL_LIGHTING);
-    drawCircle(18.f, 32.f);
+    drawCircle(18.f, 32);
     glEnable(GL_LIGHTING);
 
     // Restore modelview matrix
