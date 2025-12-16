@@ -215,8 +215,6 @@ int main() {
 
                 // Reset serial data storage in preparation for new line of data
                 serialPortData.clear();
-                curChar = '\0';
-                numRead = 0;
             }
         }
 
