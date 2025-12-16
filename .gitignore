@@ -1,8 +1,2 @@
-*.dll
-*.o
-*.d
-*.res
-*.exe
-*.swp
-*.ttf
-3dCapClient
+.cache/
+build/

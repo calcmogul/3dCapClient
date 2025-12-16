@@ -2,6 +2,8 @@
 
 #include "Rendering.hpp"
 
+#include <cstdlib>
+
 #if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
 #include <OpenGL/glu.h>
@@ -58,7 +60,9 @@ void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
 }
 
 void renderCube(sf::RenderWindow* window, RenderData& data) {
-    window->setActive();
+    if (!window->setActive(true)) {
+        std::exit(1);
+    }
 
     // Set up window
     glViewport(0, 0, window->getSize().x, window->getSize().y);
@@ -175,31 +179,31 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
 
     window->pushGLStates();
 
-    sf::Text text("", data.font, 12);
+    sf::Text text(data.font, "", 12);
     text.setFillColor(sf::Color::Black);
 
     text.setString("raw x: " + std::to_string(data.rawPos[0]));
-    text.setPosition(18, 68);
+    text.setPosition({18, 68});
     window->draw(text);
 
     text.setString("raw y: " + std::to_string(data.rawPos[1]));
-    text.setPosition(18, text.getPosition().y + 12);
+    text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
     text.setString("raw z: " + std::to_string(data.rawPos[2]));
-    text.setPosition(18, text.getPosition().y + 12);
+    text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
     text.setString("avg x: " + std::to_string(data.avgPos[0].getEstimate()));
-    text.setPosition(18, text.getPosition().y + 24);
+    text.setPosition({18, text.getPosition().y + 24});
     window->draw(text);
 
     text.setString("avg y: " + std::to_string(data.avgPos[1].getEstimate()));
-    text.setPosition(18, text.getPosition().y + 12);
+    text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
     text.setString("avg z: " + std::to_string(data.avgPos[2].getEstimate()));
-    text.setPosition(18, text.getPosition().y + 12);
+    text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
     window->popGLStates();
@@ -208,7 +212,9 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
 }
 
 void renderColor(sf::RenderWindow* window, RenderData& data) {
-    window->setActive();
+    if (!window->setActive(true)) {
+        std::exit(1);
+    }
 
     // Set up window
     glViewport(0, 0, window->getSize().x, window->getSize().y);

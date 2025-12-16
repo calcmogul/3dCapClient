@@ -39,21 +39,23 @@ int main() {
     sf::ContextSettings settings;
     settings.depthBits = 24;
     settings.stencilBits = 8;
-    settings.antialiasingLevel = 4;
+    settings.antiAliasingLevel = 4;
     settings.majorVersion = 3;
     settings.minorVersion = 0;
 
     // Setup
-    sf::RenderWindow mainWin(sf::VideoMode::getDesktopMode(),
-                             "3D Capacitor Demo - Cube",
-                             sf::Style::Resize | sf::Style::Close, settings);
+    sf::RenderWindow mainWin(
+        sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Cube",
+        sf::Style::Resize | sf::Style::Close, sf::State::Windowed, settings);
     mainWin.setFramerateLimit(25);
-    sf::RenderWindow mainWin2(sf::VideoMode::getDesktopMode(),
-                              "3D Capacitor Demo - Color",
-                              sf::Style::Resize | sf::Style::Close, settings);
+    sf::RenderWindow mainWin2(
+        sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Color",
+        sf::Style::Resize | sf::Style::Close, sf::State::Windowed, settings);
     mainWin2.setFramerateLimit(25);
 
-    mainWin.setActive();
+    if (!mainWin.setActive(true)) {
+        return 1;
+    }
 
     sf::Vector2i lastMousePos = sf::Mouse::getPosition(mainWin);
 
@@ -91,7 +93,9 @@ int main() {
     glEnable(GL_COLOR_MATERIAL);
     glColorMaterial(GL_FRONT, GL_AMBIENT_AND_DIFFUSE);
 
-    mainWin2.setActive();
+    if (!mainWin2.setActive(true)) {
+        return -1;
+    }
     glClearColor(1.f, 1.f, 1.f, 1.f);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_TEXTURE_2D);
@@ -99,31 +103,31 @@ int main() {
     // Used to store data read from serialPort port
     std::string serialPortData;
     char curChar = '\0';
-    char numRead = 0;
+    int numRead = 0;
 
-    sf::Event event;
     while (mainWin.isOpen() && mainWin2.isOpen()) {
-        while (mainWin.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
+        while (auto event = mainWin.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
                 mainWin.close();
-            } else if (event.type == sf::Event::KeyPressed) {
-                if (event.key.code == sf::Keyboard::Space) {
+            } else if (auto key_event = event->getIf<sf::Event::KeyPressed>()) {
+                if (key_event->code == sf::Keyboard::Key::Space) {
                     if (renderData.haveValidData) {
                         for (unsigned int i = 0; i < sen; i++) {
                             normalizer[i].setMinimum(rawInput[i]);
                         }
                     }
-                } else if (event.key.code == sf::Keyboard::LShift ||
-                           event.key.code == sf::Keyboard::RShift) {
+                } else if (key_event->code == sf::Keyboard::Key::LShift ||
+                           key_event->code == sf::Keyboard::Key::RShift) {
                     renderData.useRawInput = !renderData.useRawInput;
-                } else if (event.key.code == sf::Keyboard::LControl ||
-                           event.key.code == sf::Keyboard::RControl) {
+                } else if (key_event->code == sf::Keyboard::Key::LControl ||
+                           key_event->code == sf::Keyboard::Key::RControl) {
                     for (auto& obj : renderData.camera) {
                         obj.reset();
                     }
                 }
-            } else if (event.type == sf::Event::MouseButtonPressed) {
-                if (event.mouseButton.button == sf::Mouse::Right) {
+            } else if (auto mouse_event =
+                           event->getIf<sf::Event::MouseButtonPressed>()) {
+                if (mouse_event->button == sf::Mouse::Button::Right) {
                     // Reset filters
                     for (unsigned int i = 0; i < sen; i++) {
                         normalizer[i].reset();
@@ -135,10 +139,11 @@ int main() {
                         renderData.rotationMat.height(),
                         renderData.rotationMat.width());
                 }
-            } else if (event.type == sf::Event::MouseMoved) {
+            } else if (auto mouse_event =
+                           event->getIf<sf::Event::MouseMoved>()) {
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-                    float x = event.mouseMove.x - lastMousePos.x;
-                    float y = event.mouseMove.y - lastMousePos.y;
+                    float x = mouse_event->position.x - lastMousePos.x;
+                    float y = mouse_event->position.y - lastMousePos.y;
                     float mag = std::hypot(x, y);
                     float angle = mag / 2;
 
@@ -148,13 +153,13 @@ int main() {
                     renderData.rotationMat = temp * renderData.rotationMat;
                 }
 
-                lastMousePos.x = event.mouseMove.x;
-                lastMousePos.y = event.mouseMove.y;
+                lastMousePos.x = mouse_event->position.x;
+                lastMousePos.y = mouse_event->position.y;
             }
         }
 
-        while (mainWin2.pollEvent(event)) {
-            if (event.type == sf::Event::Closed) {
+        while (auto event = mainWin2.pollEvent()) {
+            if (event->is<sf::Event::Closed>()) {
                 mainWin2.close();
             }
         }
