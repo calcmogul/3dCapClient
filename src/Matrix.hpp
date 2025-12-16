@@ -8,6 +8,7 @@
 #include <cstring>
 #include <iostream>
 #include <memory>
+#include <numbers>
 #include <stdexcept>
 #include <utility>
 
@@ -357,8 +358,8 @@ Matrix<T> createQuaternion(T angle, T x, T y, T z) {
     Matrix<T> tempMat(4, 4);
 
     float mag = std::sqrt(x * x + y * y + z * z);
-    float c = std::cos(angle * M_PI / 180.f);
-    float s = std::sin(angle * M_PI / 180.f);
+    float c = std::cos(angle * std::numbers::pi / 180.f);
+    float s = std::sin(angle * std::numbers::pi / 180.f);
 
     if (mag != 0) {
         x /= mag;

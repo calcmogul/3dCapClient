@@ -3,6 +3,7 @@
 #include "GLUtils.hpp"
 
 #include <cmath>
+#include <numbers>
 
 #include <GL/glu.h>
 
@@ -100,8 +101,8 @@ void drawCircle(float radius, float points) {
     glVertex3f(0.f, 0.f, 0.f);
 
     for (float theta = 0.f; theta < 360.f; theta += 360.f / points) {
-        glVertex3f(radius * std::cos(theta * M_PI / 180.f),
-                   radius * std::sin(theta * M_PI / 180.f), 0.f);
+        glVertex3f(radius * std::cos(theta * std::numbers::pi / 180.f),
+                   radius * std::sin(theta * std::numbers::pi / 180.f), 0.f);
     }
 
     glVertex3f(radius, 0.f, 0.f);
