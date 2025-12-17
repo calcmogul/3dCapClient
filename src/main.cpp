@@ -14,7 +14,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-#include "kalman_filter.hpp"
 #include "matrix.hpp"
 #include "normalize.hpp"
 #include "render_data.hpp"

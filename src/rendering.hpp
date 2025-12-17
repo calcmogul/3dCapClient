@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <vector>
-
 #include <SFML/Graphics/RenderWindow.hpp>
 
 #include "render_data.hpp"
