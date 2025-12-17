@@ -83,20 +83,20 @@ int main() {
     settings.minorVersion = 0;
 
     // Setup
-    sf::RenderWindow main_win(
+    sf::RenderWindow main_win{
         sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Cube",
-        sf::Style::Resize | sf::Style::Close, sf::State::Windowed, settings);
+        sf::Style::Resize | sf::Style::Close, sf::State::Windowed, settings};
     main_win.setFramerateLimit(25);
-    sf::RenderWindow main_win2(
+    sf::RenderWindow main_win2{
         sf::VideoMode::getDesktopMode(), "3D Capacitor Demo - Color",
-        sf::Style::Resize | sf::Style::Close, sf::State::Windowed, settings);
+        sf::Style::Resize | sf::Style::Close, sf::State::Windowed, settings};
     main_win2.setFramerateLimit(25);
 
     if (!main_win.setActive(true)) {
         return 1;
     }
 
-    sf::Vector2i lastMousePos = sf::Mouse::getPosition(main_win);
+    sf::Vector2i last_mouse_pos = sf::Mouse::getPosition(main_win);
 
     // Set buffer clear values
     glClearColor(1.f, 1.f, 1.f, 1.f);
@@ -116,15 +116,15 @@ int main() {
     glDisable(GL_TEXTURE_2D);
 
     // Declare lighting parameters
-    GLfloat mat_specular[] = {1.0, 1.0, 1.0, 1.0};
-    GLfloat mat_shininess[] = {50.0};
-    GLfloat light_position[] = {1.0, 1.0, 1.0, 0.0};
+    constexpr std::array<GLfloat, 4> mat_specular{1.f, 1.f, 1.f, 1.f};
+    constexpr std::array<GLfloat, 1> mat_shininess{50.f};
+    constexpr std::array<GLfloat, 4> light_position{1.f, 1.f, 1.f, 0.f};
 
     // Set lighting parameters
     glShadeModel(GL_SMOOTH);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular.data());
+    glMaterialfv(GL_FRONT, GL_SHININESS, mat_shininess.data());
+    glLightfv(GL_LIGHT0, GL_POSITION, light_position.data());
 
     // Enable lighting
     glEnable(GL_LIGHTING);
@@ -177,8 +177,8 @@ int main() {
             } else if (auto mouse_event =
                            event->getIf<sf::Event::MouseMoved>()) {
                 if (sf::Mouse::isButtonPressed(sf::Mouse::Button::Left)) {
-                    float x = mouse_event->position.x - lastMousePos.x;
-                    float y = mouse_event->position.y - lastMousePos.y;
+                    float x = mouse_event->position.x - last_mouse_pos.x;
+                    float y = mouse_event->position.y - last_mouse_pos.y;
                     float mag = std::hypot(x, y);
                     float angle = mag / 2;
 
@@ -189,8 +189,7 @@ int main() {
                     render_data.rotation_mat = temp * render_data.rotation_mat;
                 }
 
-                lastMousePos.x = mouse_event->position.x;
-                lastMousePos.y = mouse_event->position.y;
+                last_mouse_pos = mouse_event->position;
             }
         }
 
