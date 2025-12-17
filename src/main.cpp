@@ -34,36 +34,23 @@ std::array<float, SENSORS> raw_input{0.f, 0.f, 0.f};
 /// @param y y component of rotation axis.
 /// @param z z component of rotation axis.
 Eigen::Matrix4f make_quaternion(float angle, float x, float y, float z) {
-  Eigen::Matrix4f mat;
-
   float mag = std::hypot(x, y, z);
-  float c = std::cos(angle);
-  float s = std::sin(angle);
-
-  if (mag != 0) {
+  if (mag != 0.f) {
     x /= mag;
     y /= mag;
     z /= mag;
   }
 
-  mat(0, 0) = x * x * (1 - c) + c;
-  mat(0, 1) = y * x * (1 - c) + z * s;
-  mat(0, 2) = x * z * (1 - c) - y * s;
-  mat(0, 3) = 0;
-  mat(1, 0) = x * y * (1 - c) - z * s;
-  mat(1, 1) = y * y * (1 - c) + c;
-  mat(1, 2) = y * z * (1 - c) + x * s;
-  mat(1, 3) = 0;
-  mat(2, 0) = x * z * (1 - c) + y * s;
-  mat(2, 1) = y * z * (1 - c) - x * s;
-  mat(2, 2) = z * z * (1 - c) + c;
-  mat(2, 3) = 0;
-  mat(3, 0) = 0;
-  mat(3, 1) = 0;
-  mat(3, 2) = 0;
-  mat(3, 3) = 1;
+  float c = std::cos(angle);
+  float s = std::sin(angle);
 
-  return mat;
+  // clang-format off
+  return Eigen::Matrix4f{
+    {    x * x * (1 - c) + c,  y * x * (1 - c) + z * s,  x * z * (1 - c) - y * s,  0},
+    {x * y * (1 - c) - z * s,      y * y * (1 - c) + c,  y * z * (1 - c) + x * s,  0},
+    {x * z * (1 - c) + y * s,  y * z * (1 - c) - x * s,      z * z * (1 - c) + c,  0},
+    {                      0,                        0,                        0,  1}};
+  // clang-format on
 }
 
 // x (left plate), y (bottom plate), z (right plate)
