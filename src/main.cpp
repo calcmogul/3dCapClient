@@ -23,8 +23,8 @@
 #include "util.hpp"
 #include "weighted_average_filter.hpp"
 
-float last_pos[SENSORS]{0.f, 0.f, 0.f};
-float raw_input[SENSORS]{0.f, 0.f, 0.f};
+std::array<float, SENSORS> last_pos{0.f, 0.f, 0.f};
+std::array<float, SENSORS> raw_input{0.f, 0.f, 0.f};
 
 /// Embeds a quaternion in a 4x4 matrix.
 ///
