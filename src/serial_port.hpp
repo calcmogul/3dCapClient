@@ -2,68 +2,65 @@
 
 #pragma once
 
-#include <stdint.h>
-
 #include <string>
+#include <string_view>
 #include <vector>
 
 #ifdef _WIN32
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#undef NOMINMAX
 #endif
 
 /// Provides an interface for communicating with an Arduino via the serial port
 class SerialPort {
  public:
-  /// Initialize SerialPort communication with the given COM port
-  explicit SerialPort(std::string port_name = "");
+  ~SerialPort() { disconnect(); }
 
-  /// Close the connection
-  /// NOTE: for some reason you can't connect again before exiting the program
-  /// and running it again.
-  ~SerialPort();
+  /// Initialize serial communication over the given port.
+  ///
+  /// @param port_name Serial port name.
+  void connect(std::string_view port_name);
 
-  /// Initialize SerialPort communication with the given COM port. If NULL is
-  /// passed as an argument, the previously assigned name will be used. This
-  /// should be done in the case of a reconnection attempt.
-  void connect(std::string port_name = "");
-
-  /// Close the connection
-  /// NOTE: for some reason you can't connect again before exiting the program
-  /// and running it again.
+  /// Closes the connection.
+  ///
+  /// NOTE: For some reason, after calling this functionm, the executable
+  /// needs to be rerun to reconnect.
   void disconnect();
 
-  /// Read data in a buffer, if nb_char is greater than the maximum number of
-  /// bytes available, it will return only the bytes available. The function
-  /// return -1 when nothing could be read, the number of bytes actually read.
-  int read(char* buffer, uint32_t nb_char);
+  /// Reads data into a buffer.
+  ///
+  /// @param buffer Destination buffer.
+  /// @param num_chars Number of characters to read.
+  /// @return The number of characters actually read or -1 on failure.
+  int read(char* buffer, size_t num_chars);
 
-  /// Writes data from a buffer through the SerialPort connection. Returns
-  /// true on success; returns false on failure.
-  bool write(char* buffer, uint32_t nb_char);
+  /// Writes data to the serial connection.
+  ///
+  /// @param buffer Source buffer.
+  /// @param num_chars Number of characters to write.
+  /// @return True on success, false on failure.
+  bool write(char* buffer, size_t num_chars);
 
-  /// Check if we are actually connected
-  bool is_connected() const;
+  /// Returns true if serial port is connected.
+  bool is_connected() const { return m_connected; }
 
+  /// Returns list of serial port names.
   static std::vector<std::string> get_serial_ports();
 
  private:
 #ifdef _WIN32
-  /// SerialPort comm handler
-  HANDLE m_handle;
-
-  /// Get various information about the connection
-  COMSTAT m_status;
-
-  /// Keep track of last error
-  DWORD m_errors;
+  /// COM handle.
+  HANDLE m_serial_handle;
 #else
+  /// Serial port file descriptor.
   int m_fd;
 #endif
 
-  /// Contains OS-specific name for serial port
+  /// Serial port name.
   std::string m_port_name;
 
-  /// Connection status
-  bool m_connected;
+  /// Connection status.
+  bool m_connected = false;
 };
