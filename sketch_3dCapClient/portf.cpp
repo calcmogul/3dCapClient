@@ -4,14 +4,26 @@
 
 #include <avr/io.h>
 
-uint8_t portf::port() { return PORTF; }
+uint8_t portf::port() {
+  return PORTF;
+}
 
-void portf::port(uint8_t v) { PORTF = v; }
+void portf::port(uint8_t v) {
+  PORTF = v;
+}
 
-uint8_t portf::pin() { return PINF; }
+uint8_t portf::pin() {
+  return PINF;
+}
 
-void portf::pin(uint8_t v) { PINF = v; }
+void portf::pin(uint8_t v) {
+  PINF = v;
+}
 
-uint8_t portf::dir() { return DDRF; }
+uint8_t portf::dir() {
+  return DDRF;
+}
 
-void portf::dir(uint8_t v) { DDRF = v; }
+void portf::dir(uint8_t v) {
+  DDRF = v;
+}
