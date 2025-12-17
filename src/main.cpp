@@ -24,7 +24,7 @@
 #include "util.hpp"
 #include "weighted_average_filter.hpp"
 
-float lastPos[SENSORS]{0.f, 0.f, 0.f};
+float last_pos[SENSORS]{0.f, 0.f, 0.f};
 float raw_input[SENSORS]{0.f, 0.f, 0.f};
 
 /// Embeds a quaternion in a 4x4 matrix.
@@ -235,13 +235,13 @@ int main() {
 
                         std::cout
                             << "diff[" << i
-                            << "]=" << std::fabs(raw_input[i] - lastPos[i])
+                            << "]=" << std::fabs(raw_input[i] - last_pos[i])
                             << "\n";
 
-                        if (std::fabs(raw_input[i] - lastPos[i]) < 350 ||
-                            lastPos[i] < 15000) {
+                        if (std::fabs(raw_input[i] - last_pos[i]) < 350 ||
+                            last_pos[i] < 15000) {
                             normalizer[i].expand_maximum(raw_input[i]);
-                            lastPos[i] = raw_input[i];
+                            last_pos[i] = raw_input[i];
                         }
 
                         float raw = normalizer[i].linearize(raw_input[i]);
