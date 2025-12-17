@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -34,11 +36,11 @@ public:
     /// Read data in a buffer, if nb_char is greater than the maximum number of
     /// bytes available, it will return only the bytes available. The function
     /// return -1 when nothing could be read, the number of bytes actually read.
-    int read(char* buffer, unsigned int nb_char);
+    int read(char* buffer, uint32_t nb_char);
 
     /// Writes data from a buffer through the SerialPort connection. Returns
     /// true on success; returns false on failure.
-    bool write(char* buffer, unsigned int nb_char);
+    bool write(char* buffer, uint32_t nb_char);
 
     /// Check if we are actually connected
     bool is_connected() const;

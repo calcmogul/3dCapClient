@@ -14,7 +14,7 @@
 #include "kalman_filter.hpp"
 #include "weighted_average_filter.hpp"
 
-inline constexpr unsigned int SENSORS = 3;
+inline constexpr int SENSORS = 3;
 
 /// A container for globals to pass to rendering functions
 class RenderData {

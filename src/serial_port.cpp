@@ -2,6 +2,8 @@
 
 #include "serial_port.hpp"
 
+#include <stdint.h>
+
 #include <algorithm>
 #include <cstring>
 #include <iostream>
@@ -132,7 +134,7 @@ void SerialPort::disconnect() {
     }
 }
 
-int SerialPort::read(char* buffer, unsigned int nb_char) {
+int SerialPort::read(char* buffer, uint32_t nb_char) {
 #ifdef _WIN32
     // Number of bytes we'll have read
     DWORD bytes_read;
@@ -152,7 +154,7 @@ int SerialPort::read(char* buffer, unsigned int nb_char) {
          * characters to prevent locking of the application.
          */
         // Number of bytes that will actually be read
-        unsigned int toRead;
+        uint32_t toRead;
         if (m_status.cbInQue > nb_char) {
             toRead = nb_char;
         } else {
@@ -193,7 +195,7 @@ int SerialPort::read(char* buffer, unsigned int nb_char) {
 #endif
 }
 
-bool SerialPort::write(char* buffer, unsigned int nb_char) {
+bool SerialPort::write(char* buffer, uint32_t nb_char) {
 #ifdef _WIN32
     DWORD bytes_sent = 0;
 #else
@@ -212,7 +214,7 @@ bool SerialPort::write(char* buffer, unsigned int nb_char) {
         return true;
     }
 #else
-    unsigned int pos = 0;
+    uint32_t pos = 0;
 
     while (pos < nb_char) {
         bytes_sent = ::write(m_fd, &buffer[pos], nb_char);

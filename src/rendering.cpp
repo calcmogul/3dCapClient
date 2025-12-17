@@ -151,9 +151,9 @@ void render_cube(sf::RenderWindow* window, RenderData& data) {
 
     glPopMatrix();
 
-    for (unsigned int z = 0; z < BOARD_SUBDIVISIONS; z++) {
-        for (unsigned int y = 0; y < BOARD_SUBDIVISIONS; y++) {
-            for (unsigned int x = 0; x < BOARD_SUBDIVISIONS; x++) {
+    for (int z = 0; z < BOARD_SUBDIVISIONS; ++z) {
+        for (int y = 0; y < BOARD_SUBDIVISIONS; ++y) {
+            for (int x = 0; x < BOARD_SUBDIVISIONS; ++x) {
                 glPushMatrix();
 
                 glTranslatef(x * SUBDIV_WIDTH, y * SUBDIV_WIDTH,

@@ -149,7 +149,7 @@ int main() {
             } else if (auto key_event = event->getIf<sf::Event::KeyPressed>()) {
                 if (key_event->code == sf::Keyboard::Key::Space) {
                     if (render_data.have_valid_data) {
-                        for (unsigned int i = 0; i < SENSORS; i++) {
+                        for (int i = 0; i < SENSORS; ++i) {
                             normalizer[i].set_minimum(raw_input[i]);
                         }
                     }
@@ -166,7 +166,7 @@ int main() {
                            event->getIf<sf::Event::MouseButtonPressed>()) {
                 if (mouse_event->button == sf::Mouse::Button::Right) {
                     // Reset filters
-                    for (unsigned int i = 0; i < SENSORS; i++) {
+                    for (int i = 0; i < SENSORS; ++i) {
                         normalizer[i].reset();
                         render_data.camera[i].reset();
                         render_data.avg_pos[i].reset();
@@ -228,7 +228,7 @@ int main() {
                 if (parts.size() == SENSORS) {
                     render_data.have_valid_data = true;
 
-                    for (unsigned int i = 0; i < SENSORS; i++) {
+                    for (int i = 0; i < SENSORS; ++i) {
                         raw_input[i] = std::atof(parts[i].c_str());
 
                         std::println("diff[{}]={}", i,

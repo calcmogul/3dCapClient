@@ -6,7 +6,7 @@
 
 #include "render_data.hpp"
 
-inline constexpr unsigned int BOARD_SUBDIVISIONS = 3;
+inline constexpr int BOARD_SUBDIVISIONS = 3;
 inline constexpr float BOARD_SIZE = 256;
 
 void render_connection_indicator(sf::RenderWindow* window, RenderData& data);
