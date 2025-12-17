@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cmath>
+#include <cstdlib>
 #include <numbers>
 #include <print>
 #include <string>
@@ -223,13 +224,12 @@ int main() {
                 // If curChar == '\n', there is a new line of complete data
                 std::println("\"{}\"", serial_port_data);
 
-                std::vector<std::string> parts = split(serial_port_data, " ");
-
+                auto parts = split(serial_port_data, " ");
                 if (parts.size() == SENSORS) {
                     render_data.have_valid_data = true;
 
                     for (int i = 0; i < SENSORS; ++i) {
-                        raw_input[i] = std::atof(parts[i].c_str());
+                        raw_input[i] = std::atoi(std::string{parts[i]}.c_str());
 
                         std::println("diff[{}]={}", i,
                                      std::fabs(raw_input[i] - last_pos[i]));
