@@ -142,8 +142,6 @@ int main() {
 
     // Used to store data read from serial_port port
     std::string serial_port_data;
-    char curChar = '\0';
-    int numRead = 0;
 
     while (main_win.isOpen() && main_win2.isOpen()) {
         while (auto event = main_win.pollEvent()) {
@@ -213,6 +211,8 @@ int main() {
 
         // Read line of serial_port data
         if (serial_port.is_connected()) {
+            char curChar;
+            int numRead;
             while ((numRead = serial_port.read(&curChar, 1)) > 0 &&
                    curChar != '\n' && curChar != '\0') {
                 serial_port_data += curChar;
