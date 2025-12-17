@@ -268,6 +268,4 @@ int main() {
         render_cube(&main_win, render_data);
         render_color(&main_win2, render_data);
     }
-
-    return 0;
 }
