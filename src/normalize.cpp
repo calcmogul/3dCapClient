@@ -1,8 +1,8 @@
 // Copyright (c) Tyler Veness
 
-#include "Normalize.hpp"
+#include "normalize.hpp"
 
-void Normalize::expandRange(float value) {
+void Normalize::expand_range(float value) {
     if (value < m_min) {
         m_min = value;
     }
@@ -12,9 +12,9 @@ void Normalize::expandRange(float value) {
     }
 }
 
-void Normalize::setMinimum(float value) { m_min = value; }
+void Normalize::set_minimum(float value) { m_min = value; }
 
-void Normalize::expandMaximum(float value) {
+void Normalize::expand_maximum(float value) {
     if (value > m_max) {
         m_max = value;
     }
@@ -46,7 +46,7 @@ float Normalize::linearize(float value) {
     float linear = std::sqrt(1 / normalized);
 
     // Normalize inverse square value to [0..1] given a maximum distance range
-    linear = (linear - m_minDistance) / (m_maxDistance - m_minDistance);
+    linear = (linear - MIN_DISTANCE) / (MAX_DISTANCE - MIN_DISTANCE);
 
     if (linear < 0.f) {
         return 0.f;

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "FilterBase.hpp"
+#include "filter_base.hpp"
 
 // m_stateEstimate == the average state
 

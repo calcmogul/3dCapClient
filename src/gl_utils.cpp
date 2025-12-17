@@ -1,6 +1,6 @@
 // Copyright (c) Tyler Veness
 
-#include "GLUtils.hpp"
+#include "gl_utils.hpp"
 
 #include <cmath>
 #include <numbers>
@@ -12,7 +12,7 @@
 #include <GL/glu.h>
 #endif
 
-void drawBox(float width, GLenum fillType) {
+void draw_box(float width, GLenum fillType) {
     float height = width, depth = width;
 
     glPushMatrix();
@@ -100,7 +100,7 @@ void drawBox(float width, GLenum fillType) {
     glPopMatrix();
 }
 
-void drawCircle(float radius, int points) {
+void draw_circle(float radius, int points) {
     glBegin(GL_TRIANGLE_FAN);
 
     glVertex3f(0.f, 0.f, 0.f);

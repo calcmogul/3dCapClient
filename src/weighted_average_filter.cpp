@@ -1,6 +1,6 @@
 // Copyright (c) Tyler Veness
 
-#include "WeightedAverageFilter.hpp"
+#include "weighted_average_filter.hpp"
 
 #include <cmath>
 
@@ -13,11 +13,11 @@ void WeightedAverageFilter::update(double input) {
     }
 
     // Get the current dt since the last call to update()
-    m_dt = std::chrono::system_clock::now() - m_lastTime;
+    m_dt = std::chrono::system_clock::now() - m_last_time;
 
-    m_stateEstimate = (m_stateEstimate * (1 - m_adapt * m_dt.count())) +
-                      (input * m_adapt * m_dt.count());
+    m_state_estimate = (m_state_estimate * (1 - m_adapt * m_dt.count())) +
+                       (input * m_adapt * m_dt.count());
 
     // Update the previous time for the next delta
-    m_lastTime = std::chrono::system_clock::now();
+    m_last_time = std::chrono::system_clock::now();
 }

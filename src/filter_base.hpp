@@ -15,21 +15,21 @@ public:
     void reset() {
         using namespace std::chrono_literals;
 
-        m_stateEstimate = 0.0;
+        m_state_estimate = 0.0;
         m_dt = 0.0s;
-        m_lastTime = std::chrono::system_clock::now();
+        m_last_time = std::chrono::system_clock::now();
     }
 
     /// Return the filtered value
-    double getEstimate() { return m_stateEstimate; }
+    double get_estimate() { return m_state_estimate; }
 
 protected:
-    double m_stateEstimate = 0.0;
+    double m_state_estimate = 0.0;
 
     /// Holds dt in update()
     std::chrono::duration<double> m_dt{0.0};
 
     /// Used to find dt in update()
-    std::chrono::time_point<std::chrono::system_clock> m_lastTime{
+    std::chrono::time_point<std::chrono::system_clock> m_last_time{
         std::chrono::system_clock::now()};
 };

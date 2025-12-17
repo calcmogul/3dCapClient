@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "FilterBase.hpp"
+#include "filter_base.hpp"
 
 // m_stateEstimate == xHat, the running estimate of state calculated by filter
 
@@ -13,8 +13,8 @@ public:
 
     void update(double input);
 
-    void setQ(double Q);
-    void setR(double R);
+    void set_Q(double Q);
+    void set_R(double R);
 
     void reset();
 
@@ -29,5 +29,5 @@ private:
     double m_R;
 
     // If true, update() sets current estimate to first measurement
-    bool m_firstRun;
+    bool m_first_run;
 };

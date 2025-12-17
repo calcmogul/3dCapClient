@@ -22,11 +22,11 @@ std::ostream& operator<<(std::ostream&, const Matrix<T>&);
 template <class T>
 class Matrix {
 public:
-    Matrix(size_t height, size_t width, bool initAsIdent = false)
+    Matrix(size_t height, size_t width, bool init_as_ident = false)
         : m_height(height), m_width(width) {
         m_matrix = std::make_unique<T[]>(height * width);
 
-        if (initAsIdent) {
+        if (init_as_ident) {
             // Create identity matrix
             for (uint32_t i = 0; i < m_height; i++) {
                 for (uint32_t j = 0; j < m_width; j++) {
@@ -198,7 +198,7 @@ public:
     /// Causes functions like RREF and inverse() to ignore augmented part of
     /// matrix
     void unaugment() {
-        m_isAugmented = false;
+        m_is_augmented = false;
 
         m_augment = nullptr;
     }
@@ -316,7 +316,7 @@ public:
 
     size_t height() const { return m_height; }
     size_t width() const {
-        if (m_isAugmented) {
+        if (m_is_augmented) {
             return m_width + m_augment->m_width;
         } else {
             return m_width;
@@ -346,7 +346,7 @@ private:
     std::unique_ptr<T[]> m_matrix;
     size_t m_height;
     size_t m_width;
-    bool m_isAugmented{false};
+    bool m_is_augmented{false};
 
     std::unique_ptr<Matrix<T>> m_augment{nullptr};
 };
@@ -354,8 +354,8 @@ private:
 namespace Mat {
 
 template <class T>
-Matrix<T> createQuaternion(T angle, T x, T y, T z) {
-    Matrix<T> tempMat(4, 4);
+Matrix<T> create_quaternion(T angle, T x, T y, T z) {
+    Matrix<T> temp_mat(4, 4);
 
     float mag = std::sqrt(x * x + y * y + z * z);
     float c = std::cos(angle * std::numbers::pi / 180.f);
@@ -367,28 +367,28 @@ Matrix<T> createQuaternion(T angle, T x, T y, T z) {
         z /= mag;
     }
 
-    tempMat(0, 0) = x * x * (1 - c) + c;
-    tempMat(0, 1) = y * x * (1 - c) + z * s;
-    tempMat(0, 2) = x * z * (1 - c) - y * s;
-    tempMat(0, 3) = 0;
-    tempMat(1, 0) = x * y * (1 - c) - z * s;
-    tempMat(1, 1) = y * y * (1 - c) + c;
-    tempMat(1, 2) = y * z * (1 - c) + x * s;
-    tempMat(1, 3) = 0;
-    tempMat(2, 0) = x * z * (1 - c) + y * s;
-    tempMat(2, 1) = y * z * (1 - c) - x * s;
-    tempMat(2, 2) = z * z * (1 - c) + c;
-    tempMat(2, 3) = 0;
-    tempMat(3, 0) = 0;
-    tempMat(3, 1) = 0;
-    tempMat(3, 2) = 0;
-    tempMat(3, 3) = 1;
+    temp_mat(0, 0) = x * x * (1 - c) + c;
+    temp_mat(0, 1) = y * x * (1 - c) + z * s;
+    temp_mat(0, 2) = x * z * (1 - c) - y * s;
+    temp_mat(0, 3) = 0;
+    temp_mat(1, 0) = x * y * (1 - c) - z * s;
+    temp_mat(1, 1) = y * y * (1 - c) + c;
+    temp_mat(1, 2) = y * z * (1 - c) + x * s;
+    temp_mat(1, 3) = 0;
+    temp_mat(2, 0) = x * z * (1 - c) + y * s;
+    temp_mat(2, 1) = y * z * (1 - c) - x * s;
+    temp_mat(2, 2) = z * z * (1 - c) + c;
+    temp_mat(2, 3) = 0;
+    temp_mat(3, 0) = 0;
+    temp_mat(3, 1) = 0;
+    temp_mat(3, 2) = 0;
+    temp_mat(3, 3) = 1;
 
-    return tempMat;
+    return temp_mat;
 }
 
 template <class T>
-Matrix<T> createIdentity(size_t height, size_t width) {
+Matrix<T> create_identity(size_t height, size_t width) {
     Matrix<T> temp(height, width, true);
 
     return temp;

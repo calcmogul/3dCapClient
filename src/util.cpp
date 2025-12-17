@@ -1,6 +1,6 @@
 // Copyright (c) Tyler Veness
 
-#include "Util.hpp"
+#include "util.hpp"
 
 #include <string>
 #include <vector>

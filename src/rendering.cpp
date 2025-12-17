@@ -1,6 +1,6 @@
 // Copyright (c) Tyler Veness
 
-#include "Rendering.hpp"
+#include "rendering.hpp"
 
 #include <cstdlib>
 
@@ -13,9 +13,9 @@
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/OpenGL.hpp>
 
-#include "GLUtils.hpp"
+#include "gl_utils.hpp"
 
-void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
+void render_connection_indicator(sf::RenderWindow* window, RenderData& data) {
     // Save projection matrix
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -34,8 +34,8 @@ void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
     // Translate circle away from top left of window
     glTranslatef(36.f, 36.f, 0.f);
 
-    if (data.isConnected) {
-        if (data.haveValidData) {
+    if (data.is_connected) {
+        if (data.have_valid_data) {
             // Connected and valid data
             glColor3ub(0, 200, 0);
         } else {
@@ -48,7 +48,7 @@ void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
     }
 
     glDisable(GL_LIGHTING);
-    drawCircle(18.f, 32);
+    draw_circle(18.f, 32);
     glEnable(GL_LIGHTING);
 
     // Restore modelview matrix
@@ -59,7 +59,7 @@ void renderConnectionIndicator(sf::RenderWindow* window, RenderData& data) {
     glPopMatrix();
 }
 
-void renderCube(sf::RenderWindow* window, RenderData& data) {
+void render_cube(sf::RenderWindow* window, RenderData& data) {
     if (!window->setActive(true)) {
         std::exit(1);
     }
@@ -70,7 +70,7 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     // Clear the buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    renderConnectionIndicator(window, data);
+    render_connection_indicator(window, data);
 
     // Set up window
     // glViewport(0, 0, window->getSize().x, window->getSize().y);
@@ -85,11 +85,13 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     // Set up modelview matrix
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    gluLookAt(
-        w / 2 + (data.camera[0].getEstimate() - data.camera[2].getEstimate()) *
-                    w / 2,
-        (w * 3 + (data.camera[1].getEstimate() - 1) * window->getSize().y / 2),
-        w * 2, w / 2, w / 2, w / 2, 0, 1, 0);
+    gluLookAt(BOARD_SIZE / 2 + (data.camera[0].get_estimate() -
+                                data.camera[2].get_estimate()) *
+                                   BOARD_SIZE / 2,
+              (BOARD_SIZE * 3 +
+               (data.camera[1].get_estimate() - 1) * window->getSize().y / 2),
+              BOARD_SIZE * 2, BOARD_SIZE / 2, BOARD_SIZE / 2, BOARD_SIZE / 2, 0,
+              1, 0);
 
     /* The sensor's coordinate axes are oriented differently from OpenGL's
      * axes, so rotate the view until they match. glTranslatef() is used to
@@ -97,44 +99,45 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
      * undone manually since pushing and popping a matrix would undo the
      * rotation as well.
      */
-    glTranslatef(w / 2, w / 2, w / 2);
+    glTranslatef(BOARD_SIZE / 2, BOARD_SIZE / 2, BOARD_SIZE / 2);
     glRotatef(180.f, 1.f, 0.f, 0.f);
 
     glMultMatrixf(
-        data.rotationMat.transpose().data());  // Rotate view with mouse
-    glTranslatef(-w / 2, -w / 2, -w / 2);
+        data.rotation_mat.transpose().data());  // Rotate view with mouse
+    glTranslatef(-BOARD_SIZE / 2, -BOARD_SIZE / 2, -BOARD_SIZE / 2);
 
     glPushMatrix();
 
     // Draw outer boundary box
     glColor4ub(0, 0, 0, 40);
-    glTranslatef(w / 2, w / 2, w / 2);
+    glTranslatef(BOARD_SIZE / 2, BOARD_SIZE / 2, BOARD_SIZE / 2);
     glRotatef(-45.f, 0.f, 1.f, 0.f);
-    drawBox(w, GL_LINE);
+    draw_box(BOARD_SIZE, GL_LINE);
 
     glPopMatrix();
 
-    float subDivWidth = w / subDivs;
+    constexpr float SUBDIV_WIDTH = BOARD_SIZE / BOARD_SUBDIVISIONS;
 
-    glTranslatef(w / 2, subDivWidth / 2, 0);
+    glTranslatef(BOARD_SIZE / 2, SUBDIV_WIDTH / 2, 0);
     glRotatef(-45.f, 0.f, 1.f, 0.f);
 
     glPushMatrix();
 
     /* Converts normalized average to position within cube
-     *   axyz * (subDivs - 1) * (w / subDivs)
-     * = axyz * (w - w / subDivs)
-     * = axyz * ( w - subDivWidth)
+     *   axyz * (BOARD_SUBDIVISIONS - 1) * (BOARD_SIZE / BOARD_SUBDIVISIONS)
+     * = axyz * (BOARD_SIZE - BOARD_SIZE / BOARD_SUBDIVISIONS)
+     * = axyz * (BOARD_SIZE - SUBDIV_WIDTH)
      */
-    float posModifier = w - subDivWidth;
+    constexpr float POS_MODIFIER = BOARD_SIZE - SUBDIV_WIDTH;
 
-    if (data.useRawInput) {
-        glTranslatef(data.rawPos[0] * posModifier, data.rawPos[1] * posModifier,
-                     data.rawPos[2] * posModifier);
+    if (data.use_raw_input) {
+        glTranslatef(data.raw_pos[0] * POS_MODIFIER,
+                     data.raw_pos[1] * POS_MODIFIER,
+                     data.raw_pos[2] * POS_MODIFIER);
     } else {
-        glTranslatef(data.avgPos[0].getEstimate() * posModifier,
-                     data.avgPos[1].getEstimate() * posModifier,
-                     data.avgPos[2].getEstimate() * posModifier);
+        glTranslatef(data.avg_pos[0].get_estimate() * POS_MODIFIER,
+                     data.avg_pos[1].get_estimate() * POS_MODIFIER,
+                     data.avg_pos[2].get_estimate() * POS_MODIFIER);
     }
 
     // Draw sphere for current position of hand
@@ -148,29 +151,30 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
 
     glPopMatrix();
 
-    for (unsigned int z = 0; z < subDivs; z++) {
-        for (unsigned int y = 0; y < subDivs; y++) {
-            for (unsigned int x = 0; x < subDivs; x++) {
+    for (unsigned int z = 0; z < BOARD_SUBDIVISIONS; z++) {
+        for (unsigned int y = 0; y < BOARD_SUBDIVISIONS; y++) {
+            for (unsigned int x = 0; x < BOARD_SUBDIVISIONS; x++) {
                 glPushMatrix();
 
-                glTranslatef(x * subDivWidth, y * subDivWidth, z * subDivWidth);
+                glTranslatef(x * SUBDIV_WIDTH, y * SUBDIV_WIDTH,
+                             z * SUBDIV_WIDTH);
 
                 /* Converts normalized position estimate [0..1] to
-                 * position in array [0..subDivs-1]
+                 * position in array [0..BOARD_SUBDIVISIONS-1]
                  */
-                if (x == std::lround(data.avgPos[0].getEstimate() *
-                                     (subDivs - 1)) &&
-                    y == std::lround(data.avgPos[1].getEstimate() *
-                                     (subDivs - 1)) &&
-                    z == std::lround(data.avgPos[2].getEstimate() *
-                                     (subDivs - 1))) {
+                if (x == std::lround(data.avg_pos[0].get_estimate() *
+                                     (BOARD_SUBDIVISIONS - 1)) &&
+                    y == std::lround(data.avg_pos[1].get_estimate() *
+                                     (BOARD_SUBDIVISIONS - 1)) &&
+                    z == std::lround(data.avg_pos[2].get_estimate() *
+                                     (BOARD_SUBDIVISIONS - 1))) {
                     // transparent red
                     glColor4ub(255, 0, 0, 200);
                 } else {
                     // transparent gray
                     glColor4ub(100, 100, 100, 100);
                 }
-                drawBox(subDivWidth / 3, GL_FILL);
+                draw_box(SUBDIV_WIDTH / 3, GL_FILL);
 
                 glPopMatrix();
             }
@@ -182,27 +186,27 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     sf::Text text(data.font, "", 12);
     text.setFillColor(sf::Color::Black);
 
-    text.setString("raw x: " + std::to_string(data.rawPos[0]));
+    text.setString("raw x: " + std::to_string(data.raw_pos[0]));
     text.setPosition({18, 68});
     window->draw(text);
 
-    text.setString("raw y: " + std::to_string(data.rawPos[1]));
+    text.setString("raw y: " + std::to_string(data.raw_pos[1]));
     text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
-    text.setString("raw z: " + std::to_string(data.rawPos[2]));
+    text.setString("raw z: " + std::to_string(data.raw_pos[2]));
     text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
-    text.setString("avg x: " + std::to_string(data.avgPos[0].getEstimate()));
+    text.setString("avg x: " + std::to_string(data.avg_pos[0].get_estimate()));
     text.setPosition({18, text.getPosition().y + 24});
     window->draw(text);
 
-    text.setString("avg y: " + std::to_string(data.avgPos[1].getEstimate()));
+    text.setString("avg y: " + std::to_string(data.avg_pos[1].get_estimate()));
     text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
-    text.setString("avg z: " + std::to_string(data.avgPos[2].getEstimate()));
+    text.setString("avg z: " + std::to_string(data.avg_pos[2].get_estimate()));
     text.setPosition({18, text.getPosition().y + 12});
     window->draw(text);
 
@@ -211,7 +215,7 @@ void renderCube(sf::RenderWindow* window, RenderData& data) {
     window->display();
 }
 
-void renderColor(sf::RenderWindow* window, RenderData& data) {
+void render_color(sf::RenderWindow* window, RenderData& data) {
     if (!window->setActive(true)) {
         std::exit(1);
     }
@@ -219,15 +223,16 @@ void renderColor(sf::RenderWindow* window, RenderData& data) {
     // Set up window
     glViewport(0, 0, window->getSize().x, window->getSize().y);
 
-    if (data.useRawInput) {
-        glClearColor(data.rawPos[0], data.rawPos[1], data.rawPos[2], 1.f);
+    if (data.use_raw_input) {
+        glClearColor(data.raw_pos[0], data.raw_pos[1], data.raw_pos[2], 1.f);
     } else {
-        glClearColor(data.avgPos[0].getEstimate(), data.avgPos[1].getEstimate(),
-                     data.avgPos[2].getEstimate(), 1.f);
+        glClearColor(data.avg_pos[0].get_estimate(),
+                     data.avg_pos[1].get_estimate(),
+                     data.avg_pos[2].get_estimate(), 1.f);
     }
     glClear(GL_COLOR_BUFFER_BIT);
 
-    renderConnectionIndicator(window, data);
+    render_connection_indicator(window, data);
 
     window->display();
 }
