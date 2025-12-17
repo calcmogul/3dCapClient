@@ -2,9 +2,8 @@
 
 #include <array>
 #include <cmath>
-#include <cstdlib>
-#include <iostream>
 #include <numbers>
+#include <print>
 #include <string>
 #include <vector>
 
@@ -223,7 +222,7 @@ int main() {
                 serial_port.disconnect();
             } else if (curChar == '\n' && serial_port_data.length() != 0) {
                 // If curChar == '\n', there is a new line of complete data
-                std::cout << "\"" << serial_port_data << "\"\n";
+                std::println("\"{}\"", serial_port_data);
 
                 std::vector<std::string> parts = split(serial_port_data, " ");
 
@@ -233,10 +232,8 @@ int main() {
                     for (unsigned int i = 0; i < SENSORS; i++) {
                         raw_input[i] = std::atof(parts[i].c_str());
 
-                        std::cout
-                            << "diff[" << i
-                            << "]=" << std::fabs(raw_input[i] - last_pos[i])
-                            << "\n";
+                        std::println("diff[{}]={}", i,
+                                     std::fabs(raw_input[i] - last_pos[i]));
 
                         if (std::fabs(raw_input[i] - last_pos[i]) < 350 ||
                             last_pos[i] < 15000) {
