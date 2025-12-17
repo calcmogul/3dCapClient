@@ -25,12 +25,12 @@ class RenderData {
   std::array<WeightedAverageFilter, SENSORS> camera{
       WeightedAverageFilter{4e-2}, WeightedAverageFilter{4e-2},
       WeightedAverageFilter{4e-2}};
-  bool is_connected{false};
-  bool have_valid_data{false};
+  bool is_connected = false;
+  bool have_valid_data = false;
   Eigen::Matrix4f rotation_mat = Eigen::Matrix4f::Identity();
 
   std::array<float, SENSORS> raw_pos{0.f, 0.f, 0.f};
-  bool use_raw_input{false};
+  bool use_raw_input = false;
 
   sf::Font font{"arial.ttf"};
 };
