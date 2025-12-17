@@ -21,7 +21,7 @@
 #include "render_data.hpp"
 #include "rendering.hpp"
 #include "serial_port.hpp"
-#include "util.hpp"
+#include "split.hpp"
 #include "weighted_average_filter.hpp"
 
 std::array<float, SENSORS> last_pos{0.f, 0.f, 0.f};
