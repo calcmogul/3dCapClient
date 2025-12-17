@@ -235,8 +235,9 @@ std::vector<std::string> SerialPort::getSerialPorts() {
 
 #ifdef _WIN32
     HKEY hRegAdapters;
-    LONG res = RegOpenKeyEx(HKEY_LOCAL_MACHINE, AdapterKey, 0, KEY_READ,
-                            &hRegAdapters);
+    LONG res =
+        RegOpenKeyEx(HKEY_LOCAL_MACHINE, "HARDWARE\\DEVICEMAP\\SERIALCOMM", 0,
+                     KEY_READ, &hRegAdapters);
 
     for (DWORD Index = 0; res == ERROR_SUCCESS; Index++) {
         char SubKeyName[255];
