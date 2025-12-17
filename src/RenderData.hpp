@@ -5,6 +5,9 @@
 #include <vector>
 
 #include <SFML/Graphics/Font.hpp>
+#if defined(__APPLE__)
+#define GL_SILENCE_DEPRECATION
+#endif
 #include <SFML/OpenGL.hpp>
 
 #include "KalmanFilter.hpp"

@@ -2,7 +2,10 @@
 
 #pragma once
 
-#include <GL/gl.h>
+#if defined(__APPLE__)
+#define GL_SILENCE_DEPRECATION
+#endif
+#include <SFML/OpenGL.hpp>
 
 /// fillType can be either GL_FILL or GL_LINE.
 /// GL_FILL fills surface with color; GL_LINE draws frame.

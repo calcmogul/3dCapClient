@@ -2,7 +2,12 @@
 
 #include "Rendering.hpp"
 
+#if defined(__APPLE__)
+#define GL_SILENCE_DEPRECATION
+#include <OpenGL/glu.h>
+#else
 #include <GL/glu.h>
+#endif
 #include <SFML/Graphics/Text.hpp>
 #include <SFML/OpenGL.hpp>
 
