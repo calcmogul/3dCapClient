@@ -1,5 +1,6 @@
 // Copyright (c) Tyler Veness
 
+#include <array>
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
@@ -70,8 +71,8 @@ Eigen::Matrix4f make_quaternion(float angle, float x, float y, float z) {
 /// Implements mouse input driver using 3D capacitor
 int main() {
     RenderData render_data;
-    std::vector<Normalize> normalizer(SENSORS);
-    const bool flip[SENSORS] = {true, true, true};
+    std::array<Normalize, SENSORS> normalizer;
+    constexpr std::array<bool, SENSORS> FLIP{true, true, true};
 
     SerialPort serial_port;
 
@@ -246,7 +247,7 @@ int main() {
                         float raw = normalizer[i].linearize(raw_input[i]);
 
                         // Update camera and position filters
-                        if (flip[i]) {
+                        if (FLIP[i]) {
                             // render_data.camera[i].update(1 - raw);
                             render_data.avg_pos[i].update(1 - raw);
                             render_data.raw_pos[i] = 1 - raw;
