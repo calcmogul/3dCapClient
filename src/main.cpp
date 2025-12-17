@@ -3,9 +3,11 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <numbers>
 #include <string>
 #include <vector>
 
+#include <Eigen/Core>
 #include <SFML/Graphics/RenderWindow.hpp>
 #if defined(__APPLE__)
 #define GL_SILENCE_DEPRECATION
@@ -14,7 +16,6 @@
 #include <SFML/Window/Event.hpp>
 #include <SFML/Window/Mouse.hpp>
 
-#include "matrix.hpp"
 #include "normalize.hpp"
 #include "render_data.hpp"
 #include "rendering.hpp"
@@ -24,6 +25,45 @@
 
 float lastPos[SENSORS]{0.f, 0.f, 0.f};
 float raw_input[SENSORS]{0.f, 0.f, 0.f};
+
+/// Embeds a quaternion in a 4x4 matrix.
+///
+/// @param angle Rotation around axis in radians.
+/// @param x x component of rotation axis.
+/// @param y y component of rotation axis.
+/// @param z z component of rotation axis.
+Eigen::Matrix4f make_quaternion(float angle, float x, float y, float z) {
+    Eigen::Matrix4f mat;
+
+    float mag = std::hypot(x, y, z);
+    float c = std::cos(angle);
+    float s = std::sin(angle);
+
+    if (mag != 0) {
+        x /= mag;
+        y /= mag;
+        z /= mag;
+    }
+
+    mat(0, 0) = x * x * (1 - c) + c;
+    mat(0, 1) = y * x * (1 - c) + z * s;
+    mat(0, 2) = x * z * (1 - c) - y * s;
+    mat(0, 3) = 0;
+    mat(1, 0) = x * y * (1 - c) - z * s;
+    mat(1, 1) = y * y * (1 - c) + c;
+    mat(1, 2) = y * z * (1 - c) + x * s;
+    mat(1, 3) = 0;
+    mat(2, 0) = x * z * (1 - c) + y * s;
+    mat(2, 1) = y * z * (1 - c) - x * s;
+    mat(2, 2) = z * z * (1 - c) + c;
+    mat(2, 3) = 0;
+    mat(3, 0) = 0;
+    mat(3, 1) = 0;
+    mat(3, 2) = 0;
+    mat(3, 3) = 1;
+
+    return mat;
+}
 
 // x (left plate), y (bottom plate), z (right plate)
 
@@ -134,9 +174,7 @@ int main() {
                         render_data.avg_pos[i].reset();
                     }
 
-                    render_data.rotation_mat = Mat::create_identity<GLfloat>(
-                        render_data.rotation_mat.height(),
-                        render_data.rotation_mat.width());
+                    render_data.rotation_mat = Eigen::Matrix4f::Identity();
                 }
             } else if (auto mouse_event =
                            event->getIf<sf::Event::MouseMoved>()) {
@@ -146,8 +184,9 @@ int main() {
                     float mag = std::hypot(x, y);
                     float angle = mag / 2;
 
-                    Matrix<GLfloat> temp(4, 4);
-                    temp = Mat::create_quaternion(angle, -y, x, 0.f);
+                    Eigen::Matrix4f temp;
+                    temp = make_quaternion(angle * std::numbers::pi / 180.f, -y,
+                                           x, 0.f);
 
                     render_data.rotation_mat = temp * render_data.rotation_mat;
                 }

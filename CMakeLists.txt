@@ -22,6 +22,16 @@ set_property(TARGET 3dCapClient PROPERTY COMPILE_WARNING_AS_ERROR ON)
 target_compile_features(3dCapClient PUBLIC cxx_std_23)
 target_include_directories(3dCapClient PRIVATE src)
 
+set(EIGEN_BUILD_CMAKE_PACKAGE TRUE)
+FetchContent_Declare(
+    Eigen3
+    GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+    GIT_TAG 5.0.1
+    SYSTEM
+)
+FetchContent_MakeAvailable(Eigen3)
+target_link_libraries(3dCapClient PUBLIC Eigen3::Eigen)
+
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
