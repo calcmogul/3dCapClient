@@ -32,10 +32,11 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Eigen3)
 target_link_libraries(3dCapClient PUBLIC Eigen3::Eigen)
 
+set(SFML_USE_SYSTEM_DEPS OFF)
 FetchContent_Declare(
     SFML
     GIT_REPOSITORY https://github.com/SFML/SFML.git
-    GIT_TAG 3.0.2
+    GIT_TAG 3.1.0
     GIT_SHALLOW ON
     EXCLUDE_FROM_ALL
     SYSTEM
