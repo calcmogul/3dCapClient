@@ -32,5 +32,5 @@ class RenderData {
   std::array<float, SENSORS> raw_pos{0.f, 0.f, 0.f};
   bool use_raw_input = false;
 
-  sf::Font font{"arial.ttf"};
+  sf::Font font{"data/arial.ttf"};
 };
